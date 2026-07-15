@@ -107,12 +107,21 @@ export function ArchitectureExplorerPage() {
   const [selected, setSelected] = React.useState<TreeItem | null>(tree[0]);
   const [query, setQuery] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
+  const [hasRefreshed, setHasRefreshed] = React.useState(false);
 
-  const refresh = () => { setIsLoading(true); window.setTimeout(() => setIsLoading(false), 800); };
+  const refresh = () => {
+    setHasRefreshed(false);
+    setIsLoading(true);
+    window.setTimeout(() => {
+      setIsLoading(false);
+      setHasRefreshed(true);
+      window.setTimeout(() => setHasRefreshed(false), 2800);
+    }, 800);
+  };
   const toggle = (id: string) => setExpanded((current) => { const next = new Set(current); next.has(id) ? next.delete(id) : next.add(id); return next; });
 
   return <main className="min-h-screen bg-background">
-    <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur-xl"><div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-5 sm:px-8"><Link href="/repositories/analysis" className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="size-4" />Analysis</Link><div className="flex items-center gap-2"><Button variant="ghost" size="sm" onClick={refresh} disabled={isLoading}><RefreshCw className={cn("size-3.5", isLoading && "animate-spin")} />Refresh</Button><Badge variant="success" className="hidden sm:inline-flex"><CheckCircle2 className="size-3" />Ready</Badge></div></div></header>
+    <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur-xl"><div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-5 sm:px-8"><Link href="/repositories/analysis" className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="size-4" />Analysis</Link><div className="flex items-center gap-2"><Button variant="ghost" size="sm" onClick={refresh} disabled={isLoading}><RefreshCw className={cn("size-3.5", isLoading && "animate-spin")} />Refresh</Button><AnimatePresence initial={false}>{hasRefreshed ? <motion.span initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}><Badge variant="success"><CheckCircle2 className="size-3" />Map refreshed</Badge></motion.span> : <Badge variant="success" className="hidden sm:inline-flex"><CheckCircle2 className="size-3" />Ready</Badge>}</AnimatePresence></div></div></header>
     <AnimatePresence mode="wait">{isLoading ? <motion.div key="skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ExplorerSkeleton /></motion.div> : <motion.div key="explorer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mx-auto max-w-7xl px-5 py-9 sm:px-8 lg:py-12">
       <section className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"><div><div className="flex flex-wrap items-center gap-2"><Badge variant="info"><Sparkles className="size-3" />Architecture Explorer</Badge><span className="text-xs text-muted-foreground">UI preview · Last analyzed just now</span></div><h1 className="mt-4 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">See how your project fits together.</h1><p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">Explore the boundaries, framework signals, and relationships detected across <span className="font-mono text-sm text-foreground">devpilot-ai</span>.</p></div><div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3"><GitBranch className="size-4 text-muted-foreground" /><div><p className="font-mono text-xs font-medium">main</p><p className="mt-0.5 text-[11px] text-muted-foreground">18 modules · 2.8k lines indexed</p></div></div></section>
       <section className="mt-8 grid gap-3 sm:grid-cols-3">{overview.map(({ label, value, caption, icon: Icon }, index) => <motion.div key={label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}><Card className="h-full"><CardContent className="p-5"><div className="flex items-start justify-between"><p className="text-sm text-muted-foreground">{label}</p><span className="grid size-8 place-items-center rounded-lg bg-secondary"><Icon className="size-4 text-muted-foreground" /></span></div><p className="mt-5 text-xl font-semibold tracking-[-0.035em]">{value}</p><p className="mt-1 text-xs text-muted-foreground">{caption}</p></CardContent></Card></motion.div>)}</section>
