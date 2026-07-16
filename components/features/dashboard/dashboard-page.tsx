@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Activity,
   ArrowUpRight,
@@ -40,6 +41,7 @@ import { cn } from "@/lib/utils";
 
 const navigation = [
   { label: "Overview", icon: LayoutDashboard, href: "/dashboard" },
+   { label: "Chat assistant", icon: MessageSquare, href: "/chat" },
   { label: "Add repository", icon: FolderGit2, href: "/repositories/upload" },
   { label: "Repository analysis", icon: Activity, href: "/repositories/analysis" },
   { label: "Security scanner", icon: ShieldCheck, href: "/repositories/security" },
@@ -144,6 +146,7 @@ function StatusBadge({ status }: { status: "Complete" | "Attention" }) {
 
 export function DashboardPage() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-background">
@@ -204,7 +207,28 @@ export function DashboardPage() {
 
           <section className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
             <Card><CardHeader className="flex-row items-center justify-between gap-4 pb-4"><div><CardTitle>Recent analyses</CardTitle><CardDescription className="mt-1">Latest work across your repositories.</CardDescription></div><button type="button" className="text-sm font-medium text-muted-foreground hover:text-foreground">View all</button></CardHeader><CardContent className="px-0 pb-0"><div className="overflow-x-auto"><table className="w-full min-w-[600px] text-left"><thead className="border-y border-border bg-muted/30 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground"><tr><th className="px-6 py-3">Repository</th><th className="px-4 py-3">Analysis</th><th className="px-4 py-3">Updated</th><th className="px-6 py-3 text-right">Status</th></tr></thead><tbody>{analyses.map(({ name, type, time, status, icon: Icon }) => <tr key={`${name}-${type}`} className="border-b border-border last:border-0 transition-colors hover:bg-muted/30"><td className="px-6 py-4"><div className="flex items-center gap-3"><span className="grid size-8 place-items-center rounded-lg bg-secondary text-muted-foreground"><Icon className="size-4" /></span><span className="font-mono text-xs font-medium">{name}</span></div></td><td className="px-4 py-4 text-sm text-muted-foreground">{type}</td><td className="px-4 py-4 text-sm text-muted-foreground">{time}</td><td className="px-6 py-4 text-right"><StatusBadge status={status} /></td></tr>)}</tbody></table></div></CardContent></Card>
-            <div className="space-y-6"><Card className="overflow-hidden"><CardHeader className="border-b border-border"><div className="flex items-center gap-2"><span className="grid size-7 place-items-center rounded-lg bg-secondary"><Bot className="size-4" /></span><div><CardTitle className="text-sm">DevPilot assistant</CardTitle><CardDescription className="text-xs">Always ready to help</CardDescription></div></div></CardHeader><CardContent className="p-4"><div className="rounded-lg border border-border bg-muted/40 p-3 text-sm leading-6 text-muted-foreground">Ask about your codebase, a recent analysis, or what to review next.</div><div className="relative mt-3"><Input aria-label="Message DevPilot assistant" placeholder="Ask DevPilot anything..." className="pr-10 text-xs" /><button type="button" className="absolute right-1 top-1 grid size-8 place-items-center rounded-md bg-primary text-primary-foreground" aria-label="Send message"><Send className="size-3.5" /></button></div></CardContent></Card>
+          
+
+
+   <div className="space-y-6"><Card
+              className="cursor-pointer overflow-hidden transition-colors hover:border-foreground/20"
+             role="link"
+              tabIndex={0}
+              onClick={() => router.push("/chat")}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") router.push("/chat");
+              }}
+            >
+                <CardHeader className="border-b border-border">
+                  
+                  <div className="flex items-center gap-2"><span className="grid size-7 place-items-center rounded-lg bg-secondary"><Bot className="size-4" /></span><div>
+                    <CardTitle className="text-sm">DevPilot assistant</CardTitle><CardDescription className="text-xs">Always ready to help</CardDescription></div></div></CardHeader><CardContent className="p-4"><div className="rounded-lg border border-border bg-muted/40 p-3 text-sm leading-6 text-muted-foreground">Ask about your codebase, a recent analysis, or what to review next.</div><div className="relative mt-3">
+                      
+                  
+        <Input readOnly aria-label="Message DevPilot assistant" placeholder="Ask DevPilot anything..." className="pr-10 text-xs" onFocus={(event) => { event.stopPropagation(); router.push("/chat"); }} />
+           <button type="button" className="absolute right-1 top-1 grid size-8 place-items-center rounded-md bg-primary text-primary-foreground" aria-label="Send message" onClick={(event) => { event.stopPropagation(); router.push("/chat"); }}><Send className="size-3.5" /></button>
+                      
+                      </div></CardContent></Card>
               <Card><CardHeader className="pb-3"><div className="flex items-center justify-between"><CardTitle>Recent activity</CardTitle><MessageSquare className="size-4 text-muted-foreground" /></div></CardHeader><CardContent className="space-y-5">{activity.map(({ text, subject, time, icon: Icon }) => <div key={subject} className="flex gap-3"><span className="grid size-7 shrink-0 place-items-center rounded-lg bg-secondary text-muted-foreground"><Icon className="size-3.5" /></span><div className="min-w-0"><p className="text-xs leading-5 text-muted-foreground">{text} <span className="font-medium text-foreground">{subject}</span></p><p className="mt-1 text-[11px] text-muted-foreground">{time}</p></div></div>)}</CardContent></Card></div>
           </section>
 

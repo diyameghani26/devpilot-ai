@@ -80,7 +80,7 @@ function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
       <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background shadow-sm">
-        <Bot className="size-[18px]" strokeWidth={2.25} />
+        <Bot className="size-4.5" strokeWidth={2.25} />
       </span>
       <span>DevPilot AI</span>
     </Link>
@@ -93,7 +93,7 @@ export function HomePage() {
       <section className="relative isolate border-b border-border">
         <div
           aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:56px_56px] opacity-40 [mask-image:linear-gradient(to_bottom,black,transparent_78%)]"
+          className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-size-[56px_56px] opacity-40 [mask-[linear-gradient(to_bottom,black,transparent_78%)]"
         />
 
         <header className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-5 sm:px-8">
@@ -132,7 +132,7 @@ export function HomePage() {
             </motion.div>
             <motion.h1
               variants={fadeUp}
-              className="max-w-3xl text-5xl font-semibold tracking-[-0.055em] text-balance sm:text-6xl lg:text-7xl"
+              className="max-w-3xl text-4xl font-semibold tracking-[-0.055em] text-balance sm:text-6xl lg:text-7xl"
             >
               See the whole codebase. <span className="text-muted-foreground">Ship the right change.</span>
             </motion.h1>
@@ -148,7 +148,7 @@ export function HomePage() {
               </Link>
               <Link
                 href="#workflow"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-border bg-background px-5 text-sm font-medium transition-colors hover:bg-muted"
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-background px-5 text-sm font-medium text-foreground transition-opacity hover:opacity-90 lg:w-auto"
               >
                 See how it works <ChevronRight className="size-4" />
               </Link>
@@ -169,7 +169,7 @@ export function HomePage() {
             transition={{ duration: 0.6, delay: 0.25 }}
             className="relative mx-auto w-full max-w-xl"
           >
-            <div className="absolute -inset-5 -z-10 rounded-[2rem] bg-muted/70 blur-2xl" />
+            <div className="absolute -inset-5 -z-10 rounded-4xl bg-muted/70 blur-2xl" />
             <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-foreground/10">
               <div className="flex h-12 items-center justify-between border-b border-border px-4">
                 <div className="flex items-center gap-2">
@@ -180,7 +180,7 @@ export function HomePage() {
                 <span className="font-mono text-[11px] text-muted-foreground">devpilot / atlas-api</span>
                 <span className="size-6" />
               </div>
-              <div className="grid min-h-[360px] grid-cols-[148px_1fr] sm:min-h-[410px] sm:grid-cols-[170px_1fr]">
+             <div className="grid min-h-90 grid-cols-1 sm:min-h-102.5 sm:grid-cols-[170px_1fr]">
                 <aside className="hidden border-r border-border p-3 text-xs text-muted-foreground sm:block">
                   <div className="mb-4 flex items-center gap-2 px-2 font-medium text-foreground">
                     <GitBranch className="size-3.5" /> atlas-api

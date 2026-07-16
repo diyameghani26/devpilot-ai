@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, Bot, Bug, ChevronLeft, ChevronRight, FolderGit2, LayoutDashboard, Menu, Network, Plus, ShieldCheck, X } from "lucide-react";
+import { Activity, Bot, Bug, ChevronLeft, ChevronRight, FolderGit2, Gauge, LayoutDashboard, Menu, Network, Plus, ShieldCheck, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ const navigation = [
   { href: "/repositories/architecture", label: "Architecture explorer", icon: Network },
   { href: "/repositories/bugs", label: "Bug detection", icon: Bug },
   { href: "/repositories/security", label: "Security scanner", icon: ShieldCheck },
+  { href: "/repositories/performance", label: "Performance insights", icon: Gauge },
 ] as const;
 
 function Brand({ compact = false }: { compact?: boolean }) {
