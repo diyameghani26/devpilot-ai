@@ -104,6 +104,7 @@ export function HomePage() {
           </nav>
           <div className="flex items-center gap-3">
             <ThemeToggle />
+            <Link href="/dashboard" className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted sm:hidden">Workspace</Link>
             <Link
               href="#get-started"
               className="hidden items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 sm:inline-flex"

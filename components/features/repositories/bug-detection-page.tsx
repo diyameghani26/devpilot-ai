@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-unused-vars -- issue metadata is retained in the preview fixture shape. */
 
 import * as React from "react";
 import Link from "next/link";
@@ -8,9 +9,7 @@ import {
   Bug,
   CheckCircle2,
   ChevronDown,
-  ChevronRight,
   CircleAlert,
-  Code2,
   FileCode2,
   Filter,
   GitBranch,

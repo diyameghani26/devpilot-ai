@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
   Activity,
   ArrowUpRight,
   Bell,
-  BookOpen,
   Bot,
   CheckCircle2,
   ChevronDown,
@@ -39,10 +39,10 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { label: "Overview", icon: LayoutDashboard, active: true },
-  { label: "Repositories", icon: FolderGit2, active: false },
-  { label: "Analyses", icon: Activity, active: false },
-  { label: "Documentation", icon: BookOpen, active: false },
+  { label: "Overview", icon: LayoutDashboard, href: "/dashboard" },
+  { label: "Add repository", icon: FolderGit2, href: "/repositories/upload" },
+  { label: "Repository analysis", icon: Activity, href: "/repositories/analysis" },
+  { label: "Security scanner", icon: ShieldCheck, href: "/repositories/security" },
 ] as const;
 
 const secondaryNavigation = [
@@ -58,9 +58,9 @@ const statistics = [
 ] as const;
 
 const quickActions = [
-  { title: "Analyze repository", description: "Understand architecture and dependencies.", icon: Sparkles },
-  { title: "Review pull request", description: "Get context-aware change feedback.", icon: GitPullRequest },
-  { title: "Run security scan", description: "Surface risks before they ship.", icon: ShieldCheck },
+  { title: "Analyze repository", description: "Understand architecture and dependencies.", icon: Sparkles, href: "/repositories/analysis" },
+  { title: "Explore architecture", description: "Trace modules, responsibilities, and relationships.", icon: GitPullRequest, href: "/repositories/architecture" },
+  { title: "Run security scan", description: "Surface risks before they ship.", icon: ShieldCheck, href: "/repositories/security" },
 ] as const;
 
 const analyses = [
@@ -101,19 +101,19 @@ function Sidebar({ mobile = false, onClose }: { mobile?: boolean; onClose?: () =
       <div className="mt-8 px-1">
         <p className="mb-2 px-2 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Workspace</p>
         <nav className="space-y-1" aria-label="Dashboard navigation">
-          {navigation.map(({ label, icon: Icon, active }) => (
-            <button
-              type="button"
+          {navigation.map(({ label, icon: Icon, href }) => (
+            <Link
               key={label}
+              href={href}
               className={cn(
                 "flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-sm transition-colors",
-                active ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                href === "/dashboard" ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
               onClick={onClose}
             >
               <Icon className="size-4" />
               {label}
-            </button>
+            </Link>
           ))}
         </nav>
       </div>
@@ -175,8 +175,8 @@ export function DashboardPage() {
             </button>
             <Separator orientation="vertical" className="mx-1 hidden h-5 sm:block" />
             <button type="button" className="flex items-center gap-2 rounded-lg p-1 text-left transition-colors hover:bg-muted" aria-label="Open account menu">
-              <span className="grid size-7 place-items-center rounded-md bg-secondary text-xs font-semibold">AK</span>
-              <span className="hidden sm:block"><span className="block text-xs font-medium">Aarav Khanna</span><span className="block text-[11px] text-muted-foreground">Acme Studio</span></span>
+              <span className="grid size-7 place-items-center rounded-md bg-secondary text-xs font-semibold">DW</span>
+              <span className="hidden sm:block"><span className="block text-xs font-medium">Demo workspace</span><span className="block text-[11px] text-muted-foreground">Product team</span></span>
               <ChevronDown className="hidden size-3.5 text-muted-foreground sm:block" />
             </button>
           </div>
@@ -184,8 +184,8 @@ export function DashboardPage() {
 
         <main className="mx-auto max-w-[1600px] px-4 py-7 sm:px-6 lg:px-8 lg:py-9">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <div><p className="text-sm text-muted-foreground">Tuesday, July 15</p><h1 className="mt-1 text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">Good afternoon, Aarav.</h1><p className="mt-2 text-sm text-muted-foreground">Here’s the latest across your engineering workspace.</p></div>
-            <Button size="lg"><Plus className="size-4" />New analysis</Button>
+            <div><p className="text-sm text-muted-foreground">Engineering workspace</p><h1 className="mt-1 text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">Your work, in context.</h1><p className="mt-2 text-sm text-muted-foreground">Here’s the latest across this demo engineering workspace.</p></div>
+            <Link href="/repositories/upload" className="inline-flex h-11 items-center justify-center gap-2 rounded-[calc(var(--radius)-0.15rem)] bg-primary px-5 text-[0.9375rem] font-medium text-primary-foreground shadow-[0_1px_2px_rgb(0_0_0_/_0.2)] transition-opacity hover:opacity-90"><Plus className="size-4" />New analysis</Link>
           </motion.div>
 
           <section className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Workspace statistics">
@@ -199,7 +199,7 @@ export function DashboardPage() {
           </section>
 
           <section className="mt-8" aria-labelledby="quick-actions-title"><div className="mb-4 flex items-center justify-between"><h2 id="quick-actions-title" className="text-base font-semibold tracking-[-0.02em]">Quick actions</h2><button type="button" className="text-sm text-muted-foreground hover:text-foreground">View all</button></div><div className="grid gap-3 lg:grid-cols-3">
-            {quickActions.map(({ title, description, icon: Icon }) => <button type="button" key={title} className="group rounded-xl border border-border bg-card p-5 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/20 hover:bg-surface-raised"><span className="grid size-9 place-items-center rounded-lg bg-secondary text-foreground"><Icon className="size-4" /></span><div className="mt-5 flex items-center justify-between gap-3"><div><h3 className="text-sm font-medium">{title}</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p></div><ArrowUpRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground" /></div></button>)}
+            {quickActions.map(({ title, description, icon: Icon, href }) => <Link href={href} key={title} className="group rounded-xl border border-border bg-card p-5 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/20 hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span className="grid size-9 place-items-center rounded-lg bg-secondary text-foreground"><Icon className="size-4" /></span><div className="mt-5 flex items-center justify-between gap-3"><div><h3 className="text-sm font-medium">{title}</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p></div><ArrowUpRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground" /></div></Link>)}
           </div></section>
 
           <section className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">

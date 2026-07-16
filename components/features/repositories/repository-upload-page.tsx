@@ -28,9 +28,9 @@ import { cn } from "@/lib/utils";
 type UploadState = "idle" | "uploading" | "success" | "error";
 
 const recentRepositories = [
-  { name: "acme/payments-service", source: "GitHub", time: "12 minutes ago", status: "Ready" },
-  { name: "acme/web-platform", source: "GitHub", time: "Yesterday", status: "Ready" },
-  { name: "acme/mobile-app", source: "ZIP upload", time: "Jul 12, 2026", status: "Ready" },
+  { name: "demo/subscription-service", source: "GitHub", time: "12 minutes ago", status: "Ready" },
+  { name: "demo/web-platform", source: "GitHub", time: "Yesterday", status: "Ready" },
+  { name: "demo/mobile-client", source: "ZIP upload", time: "Jul 12, 2026", status: "Ready" },
 ] as const;
 
 function GitHubMark({ className }: { className?: string }) {

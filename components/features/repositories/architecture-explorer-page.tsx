@@ -118,7 +118,7 @@ export function ArchitectureExplorerPage() {
       window.setTimeout(() => setHasRefreshed(false), 2800);
     }, 800);
   };
-  const toggle = (id: string) => setExpanded((current) => { const next = new Set(current); next.has(id) ? next.delete(id) : next.add(id); return next; });
+  const toggle = (id: string) => setExpanded((current) => { const next = new Set(current); if (next.has(id)) next.delete(id); else next.add(id); return next; });
 
   return <main className="min-h-screen bg-background">
     <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur-xl"><div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-5 sm:px-8"><Link href="/repositories/analysis" className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="size-4" />Analysis</Link><div className="flex items-center gap-2"><Button variant="ghost" size="sm" onClick={refresh} disabled={isLoading}><RefreshCw className={cn("size-3.5", isLoading && "animate-spin")} />Refresh</Button><AnimatePresence initial={false}>{hasRefreshed ? <motion.span initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}><Badge variant="success"><CheckCircle2 className="size-3" />Map refreshed</Badge></motion.span> : <Badge variant="success" className="hidden sm:inline-flex"><CheckCircle2 className="size-3" />Ready</Badge>}</AnimatePresence></div></div></header>
