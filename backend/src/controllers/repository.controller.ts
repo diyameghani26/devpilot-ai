@@ -1,0 +1,48 @@
+import { RequestHandler } from "express";
+
+import Repository from "../models/repository.model";
+
+type CreateRepositoryBody = {
+  name?: unknown;
+  githubUrl?: unknown;
+  branch?: unknown;
+};
+
+export const createRepository: RequestHandler<unknown, unknown, CreateRepositoryBody> = async (
+  request,
+  response,
+  next,
+) => {
+  const { name, githubUrl, branch } = request.body;
+
+  if (typeof name !== "string" || !name.trim() || typeof githubUrl !== "string" || !githubUrl.trim()) {
+    response.status(400).json({
+      success: false,
+      message: "Name and GitHub URL are required",
+    });
+    return;
+  }
+
+  if (branch !== undefined && (typeof branch !== "string" || !branch.trim())) {
+    response.status(400).json({
+      success: false,
+      message: "Branch must be a non-empty string",
+    });
+    return;
+  }
+
+  try {
+    const repository = await Repository.create({
+      name: name.trim(),
+      githubUrl: githubUrl.trim(),
+      ...(branch ? { branch: branch.trim() } : {}),
+    });
+
+    response.status(201).json({
+      success: true,
+      data: repository,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
