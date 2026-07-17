@@ -50,8 +50,15 @@ type CreateRepositoryResponse = {
   data: Repository;
 };
 
+type RepositoryResponse = {
+  success: boolean;
+  repository: Repository;
+};
+
 export const repositoriesApi = {
   list: async (): Promise<Repository[]> => (await request<RepositoryListResponse>("/api/repositories")).repositories,
+  get: async (id: string): Promise<Repository> =>
+    (await request<RepositoryResponse>(`/api/repositories/${encodeURIComponent(id)}`)).repository,
   create: async (repository: Pick<Repository, "name" | "githubUrl"> & { branch?: string }): Promise<Repository> =>
     (await request<CreateRepositoryResponse>("/api/repositories", {
       method: "POST",
