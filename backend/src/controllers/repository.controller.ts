@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import { isValidObjectId } from "mongoose";
 
 import Repository from "../models/repository.model";
+import { isValidGitHubRepositoryUrl } from "../utils/github-url";
 
 type CreateRepositoryBody = {
   name?: unknown;
@@ -94,6 +95,14 @@ export const updateRepository: RequestHandler<{ id: string }, unknown, UpdateRep
       return;
     }
 
+    if (field === "githubUrl" && !isValidGitHubRepositoryUrl(value.trim())) {
+      response.status(400).json({
+        success: false,
+        message: "Invalid GitHub repository URL",
+      });
+      return;
+    }
+
     updates[field] = value.trim();
   }
 
@@ -170,6 +179,14 @@ export const createRepository: RequestHandler<unknown, unknown, CreateRepository
     response.status(400).json({
       success: false,
       message: "Name and GitHub URL are required",
+    });
+    return;
+  }
+
+  if (!isValidGitHubRepositoryUrl(githubUrl.trim())) {
+    response.status(400).json({
+      success: false,
+      message: "Invalid GitHub repository URL",
     });
     return;
   }

@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createRepository = exports.deleteRepository = exports.updateRepository = exports.getRepositoryById = exports.getRepositories = void 0;
 const mongoose_1 = require("mongoose");
 const repository_model_1 = __importDefault(require("../models/repository.model"));
+const github_url_1 = require("../utils/github-url");
 const getRepositories = async (_request, response, next) => {
     try {
         const repositories = await repository_model_1.default.find().sort({ createdAt: -1 });
@@ -68,6 +69,13 @@ const updateRepository = async (request, response, next) => {
             response.status(400).json({
                 success: false,
                 message: `${field} must be a non-empty string`,
+            });
+            return;
+        }
+        if (field === "githubUrl" && !(0, github_url_1.isValidGitHubRepositoryUrl)(value.trim())) {
+            response.status(400).json({
+                success: false,
+                message: "Invalid GitHub repository URL",
             });
             return;
         }
@@ -136,6 +144,13 @@ const createRepository = async (request, response, next) => {
         response.status(400).json({
             success: false,
             message: "Name and GitHub URL are required",
+        });
+        return;
+    }
+    if (!(0, github_url_1.isValidGitHubRepositoryUrl)(githubUrl.trim())) {
+        response.status(400).json({
+            success: false,
+            message: "Invalid GitHub repository URL",
         });
         return;
     }
