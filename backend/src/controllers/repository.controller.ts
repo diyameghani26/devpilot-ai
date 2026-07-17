@@ -128,6 +128,37 @@ export const updateRepository: RequestHandler<{ id: string }, unknown, UpdateRep
   }
 };
 
+export const deleteRepository: RequestHandler<{ id: string }> = async (request, response, next) => {
+  const { id } = request.params;
+
+  if (!isValidObjectId(id)) {
+    response.status(400).json({
+      success: false,
+      message: "Invalid repository ID",
+    });
+    return;
+  }
+
+  try {
+    const repository = await Repository.findByIdAndDelete(id);
+
+    if (!repository) {
+      response.status(404).json({
+        success: false,
+        message: "Repository not found",
+      });
+      return;
+    }
+
+    response.status(200).json({
+      success: true,
+      message: "Repository deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const createRepository: RequestHandler<unknown, unknown, CreateRepositoryBody> = async (
   request,
   response,

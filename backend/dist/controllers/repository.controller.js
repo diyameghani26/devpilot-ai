@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createRepository = exports.updateRepository = exports.getRepositoryById = exports.getRepositories = void 0;
+exports.createRepository = exports.deleteRepository = exports.updateRepository = exports.getRepositoryById = exports.getRepositories = void 0;
 const mongoose_1 = require("mongoose");
 const repository_model_1 = __importDefault(require("../models/repository.model"));
 const getRepositories = async (_request, response, next) => {
@@ -102,6 +102,34 @@ const updateRepository = async (request, response, next) => {
     }
 };
 exports.updateRepository = updateRepository;
+const deleteRepository = async (request, response, next) => {
+    const { id } = request.params;
+    if (!(0, mongoose_1.isValidObjectId)(id)) {
+        response.status(400).json({
+            success: false,
+            message: "Invalid repository ID",
+        });
+        return;
+    }
+    try {
+        const repository = await repository_model_1.default.findByIdAndDelete(id);
+        if (!repository) {
+            response.status(404).json({
+                success: false,
+                message: "Repository not found",
+            });
+            return;
+        }
+        response.status(200).json({
+            success: true,
+            message: "Repository deleted successfully",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.deleteRepository = deleteRepository;
 const createRepository = async (request, response, next) => {
     const { name, githubUrl, branch } = request.body;
     if (typeof name !== "string" || !name.trim() || typeof githubUrl !== "string" || !githubUrl.trim()) {

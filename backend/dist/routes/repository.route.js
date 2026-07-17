@@ -7,4 +7,5 @@ repositoryRouter.get("/", repository_controller_1.getRepositories);
 repositoryRouter.get("/:id", repository_controller_1.getRepositoryById);
 repositoryRouter.post("/", repository_controller_1.createRepository);
 repositoryRouter.put("/:id", repository_controller_1.updateRepository);
+repositoryRouter.delete("/:id", repository_controller_1.deleteRepository);
 exports.default = repositoryRouter;
