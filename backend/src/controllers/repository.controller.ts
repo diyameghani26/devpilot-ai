@@ -8,6 +8,20 @@ type CreateRepositoryBody = {
   branch?: unknown;
 };
 
+export const getRepositories: RequestHandler = async (_request, response, next) => {
+  try {
+    const repositories = await Repository.find().sort({ createdAt: -1 });
+
+    response.status(200).json({
+      success: true,
+      count: repositories.length,
+      repositories,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const createRepository: RequestHandler<unknown, unknown, CreateRepositoryBody> = async (
   request,
   response,

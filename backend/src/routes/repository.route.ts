@@ -1,9 +1,10 @@
 import { Router } from "express";
 
-import { createRepository } from "../controllers/repository.controller";
+import { createRepository, getRepositories } from "../controllers/repository.controller";
 
 const repositoryRouter = Router();
 
+repositoryRouter.get("/", getRepositories);
 repositoryRouter.post("/", createRepository);
 
 export default repositoryRouter;
