@@ -1,8 +1,10 @@
 import { Router } from "express";
 
 import {
+  analyzeRepositoryById,
   createRepository,
   deleteRepository,
+  getRepositoryAnalysisById,
   getRepositoryById,
   getRepositories,
   updateRepository,
@@ -11,6 +13,8 @@ import {
 const repositoryRouter = Router();
 
 repositoryRouter.get("/", getRepositories);
+repositoryRouter.post("/:id/analyze", analyzeRepositoryById);
+repositoryRouter.get("/:id/analysis", getRepositoryAnalysisById);
 repositoryRouter.get("/:id", getRepositoryById);
 repositoryRouter.post("/", createRepository);
 repositoryRouter.put("/:id", updateRepository);

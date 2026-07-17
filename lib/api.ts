@@ -39,6 +39,19 @@ export type Repository = {
   updatedAt: string;
 };
 
+export type RepositoryAnalysis = {
+  primaryLanguage: string;
+  repositorySizeEstimate: {
+    value: number;
+    unit: "KB";
+  };
+  fileCountEstimate: number;
+  frameworks: string[];
+  packageManager: string;
+  source: string;
+  analyzedAt: string;
+};
+
 type RepositoryListResponse = {
   success: boolean;
   count: number;
@@ -55,10 +68,23 @@ type RepositoryResponse = {
   repository: Repository;
 };
 
+type RepositoryAnalysisResponse = {
+  success: boolean;
+  analysis: RepositoryAnalysis;
+};
+
+type AnalyzeRepositoryResponse = RepositoryAnalysisResponse & {
+  repository: Repository;
+};
+
 export const repositoriesApi = {
   list: async (): Promise<Repository[]> => (await request<RepositoryListResponse>("/api/repositories")).repositories,
   get: async (id: string): Promise<Repository> =>
     (await request<RepositoryResponse>(`/api/repositories/${encodeURIComponent(id)}`)).repository,
+  getAnalysis: async (id: string): Promise<RepositoryAnalysis> =>
+    (await request<RepositoryAnalysisResponse>(`/api/repositories/${encodeURIComponent(id)}/analysis`)).analysis,
+  analyze: async (id: string): Promise<AnalyzeRepositoryResponse> =>
+    request<AnalyzeRepositoryResponse>(`/api/repositories/${encodeURIComponent(id)}/analyze`, { method: "POST" }),
   create: async (repository: Pick<Repository, "name" | "githubUrl"> & { branch?: string }): Promise<Repository> =>
     (await request<CreateRepositoryResponse>("/api/repositories", {
       method: "POST",

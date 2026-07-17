@@ -3,6 +3,7 @@ import { isValidObjectId } from "mongoose";
 
 import Repository from "../models/repository.model";
 import { getGitHubRepositoryMetadata } from "../services/github-repository-metadata.service";
+import { analyzeRepository, getRepositoryAnalysis } from "../services/repository-analysis.service";
 import { isValidGitHubRepositoryUrl } from "../utils/github-url";
 
 type CreateRepositoryBody = {
@@ -58,6 +59,54 @@ export const getRepositoryById: RequestHandler<{ id: string }> = async (request,
       success: true,
       repository,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const analyzeRepositoryById: RequestHandler<{ id: string }> = async (request, response, next) => {
+  const { id } = request.params;
+
+  if (!isValidObjectId(id)) {
+    response.status(400).json({ success: false, message: "Invalid repository ID" });
+    return;
+  }
+
+  try {
+    const repository = await analyzeRepository(id);
+
+    if (!repository) {
+      response.status(404).json({ success: false, message: "Repository not found" });
+      return;
+    }
+
+    response.status(200).json({ success: true, repository, analysis: repository.analysis });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getRepositoryAnalysisById: RequestHandler<{ id: string }> = async (request, response, next) => {
+  const { id } = request.params;
+
+  if (!isValidObjectId(id)) {
+    response.status(400).json({ success: false, message: "Invalid repository ID" });
+    return;
+  }
+
+  try {
+    const analysis = await getRepositoryAnalysis(id);
+
+    if (analysis === null) {
+      response.status(404).json({ success: false, message: "Repository not found" });
+      return;
+    }
+    if (!analysis) {
+      response.status(404).json({ success: false, message: "Repository analysis not available" });
+      return;
+    }
+
+    response.status(200).json({ success: true, analysis });
   } catch (error) {
     next(error);
   }

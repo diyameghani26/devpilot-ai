@@ -4,6 +4,8 @@ const express_1 = require("express");
 const repository_controller_1 = require("../controllers/repository.controller");
 const repositoryRouter = (0, express_1.Router)();
 repositoryRouter.get("/", repository_controller_1.getRepositories);
+repositoryRouter.post("/:id/analyze", repository_controller_1.analyzeRepositoryById);
+repositoryRouter.get("/:id/analysis", repository_controller_1.getRepositoryAnalysisById);
 repositoryRouter.get("/:id", repository_controller_1.getRepositoryById);
 repositoryRouter.post("/", repository_controller_1.createRepository);
 repositoryRouter.put("/:id", repository_controller_1.updateRepository);

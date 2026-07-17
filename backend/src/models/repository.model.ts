@@ -17,6 +17,7 @@ const repositorySchema = new Schema(
     status: {
       type: String,
       default: "pending",
+      enum: ["pending", "analyzing", "ready"],
     },
     analysis: {
       type: Schema.Types.Mixed,

@@ -17,6 +17,7 @@ const repositorySchema = new mongoose_1.Schema({
     status: {
         type: String,
         default: "pending",
+        enum: ["pending", "analyzing", "ready"],
     },
     analysis: {
         type: mongoose_1.Schema.Types.Mixed,
