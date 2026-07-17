@@ -311,7 +311,7 @@ export function HomePage() {
               </h2>
             </div>
             <Link
-              href="mailto:hello@devpilot.ai"
+              href="/repositories/upload"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-background px-5 text-sm font-medium text-foreground transition-opacity hover:opacity-90"
             >
               Start with DevPilot <ArrowRight className="size-4" />
