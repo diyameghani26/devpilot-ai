@@ -18,13 +18,16 @@ export function RepositoryWorkspacePage({ repositoryId }: { repositoryId: string
   const [isLoadingAnalysis, setIsLoadingAnalysis] = React.useState(true);
   const [isAnalyzing, setIsAnalyzing] = React.useState(false);
 
-  const loadRepository = React.useCallback(async () => {
+  const loadRepository = React.useCallback(async (): Promise<Repository | null> => {
     setIsLoading(true);
     setError("");
     try {
-      setRepository(await repositoriesApi.get(repositoryId));
+      const loadedRepository = await repositoriesApi.get(repositoryId);
+      setRepository(loadedRepository);
+      return loadedRepository;
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Unable to load repository.");
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -47,8 +50,15 @@ export function RepositoryWorkspacePage({ repositoryId }: { repositoryId: string
   }, [repositoryId]);
 
   React.useEffect(() => {
-    void loadRepository();
-    void loadAnalysis();
+    void (async () => {
+      const loadedRepository = await loadRepository();
+      if (loadedRepository?.status === "ready") {
+        await loadAnalysis();
+      } else {
+        setAnalysis(null);
+        setIsLoadingAnalysis(false);
+      }
+    })();
   }, [loadAnalysis, loadRepository]);
 
   const analyzeRepository = async () => {

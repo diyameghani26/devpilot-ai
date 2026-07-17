@@ -47,6 +47,7 @@ export type RepositoryAnalysis = {
   };
   fileCountEstimate: number;
   frameworks: string[];
+  runtimes: string[];
   packageManager: string;
   dependencies: Record<string, string>;
   scripts: Record<string, string>;

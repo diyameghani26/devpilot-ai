@@ -48,31 +48,45 @@ const detectPackageManager = (paths) => {
         return "npm";
     return "unknown";
 };
-const detectFrameworks = (dependencies, paths) => {
+const frameworkPackages = {
+    next: "Next.js",
+    react: "React",
+    "react-dom": "React",
+    vite: "Vite",
+    express: "Express",
+    vue: "Vue",
+    "@angular/core": "Angular",
+    svelte: "Svelte",
+    nuxt: "Nuxt",
+    "@nestjs/core": "NestJS",
+    fastify: "Fastify",
+    koa: "Koa",
+    "@hapi/hapi": "Hapi",
+    "@remix-run/react": "Remix",
+    astro: "Astro",
+    "solid-js": "Solid",
+    "@builder.io/qwik": "Qwik",
+};
+const detectFrameworks = (dependencies) => {
     const packages = new Set(Object.keys(dependencies));
     const frameworks = new Set();
-    const hasPath = (prefix) => [...paths].some((path) => path.startsWith(prefix));
-    if (packages.has("next") || [...paths].some((path) => /^next\.config\./.test(path)))
-        frameworks.add("Next.js");
-    if (packages.has("react") || packages.has("react-dom"))
-        frameworks.add("React");
-    if (packages.has("vite") || [...paths].some((path) => /^vite\.config\./.test(path)))
-        frameworks.add("Vite");
-    if (packages.has("express"))
-        frameworks.add("Express");
-    if (packages.has("vue") || hasPath("src/") && [...paths].some((path) => path.endsWith(".vue")))
-        frameworks.add("Vue");
-    if (packages.has("@angular/core") || paths.has("angular.json"))
-        frameworks.add("Angular");
-    if (packages.has("svelte") || paths.has("svelte.config.js"))
-        frameworks.add("Svelte");
-    if (packages.has("django") || paths.has("manage.py"))
-        frameworks.add("Django");
-    if (packages.has("flask"))
-        frameworks.add("Flask");
-    if (Object.keys(dependencies).length > 0 || [...paths].some((path) => /\.(?:cjs|mjs|js|ts)$/.test(path)))
-        frameworks.add("Node.js");
+    for (const [packageName, framework] of Object.entries(frameworkPackages)) {
+        if (packages.has(packageName))
+            frameworks.add(framework);
+    }
     return [...frameworks];
+};
+const detectRuntimes = (packageManager, packageJson, paths) => {
+    const runtimes = new Set();
+    const engines = asStringRecord(packageJson.engines);
+    if (paths.has("package.json") || packageManager === "npm" || packageManager === "yarn" || packageManager === "pnpm" || engines.node) {
+        runtimes.add("Node.js");
+    }
+    if (packageManager === "bun" || engines.bun)
+        runtimes.add("Bun");
+    if (paths.has("deno.json") || paths.has("deno.jsonc") || engines.deno)
+        runtimes.add("Deno");
+    return [...runtimes];
 };
 const findPrimaryLanguage = (entries) => {
     const counts = new Map();
@@ -142,6 +156,7 @@ const createGitHubAnalysis = async (githubUrl, branch) => {
         ...asStringRecord(packageJson.peerDependencies),
         ...asStringRecord(packageJson.optionalDependencies),
     };
+    const packageManager = detectPackageManager(paths);
     return {
         repositorySizeEstimate: {
             value: repository.size,
@@ -149,8 +164,9 @@ const createGitHubAnalysis = async (githubUrl, branch) => {
         },
         fileCountEstimate: tree.filter((entry) => entry.type === "blob").length,
         primaryLanguage: findPrimaryLanguage(tree),
-        frameworks: detectFrameworks(dependencies, paths),
-        packageManager: detectPackageManager(paths),
+        frameworks: detectFrameworks(dependencies),
+        runtimes: detectRuntimes(packageManager, packageJson, paths),
+        packageManager,
         dependencies,
         scripts: asStringRecord(packageJson.scripts),
         source: "github-rest-api",

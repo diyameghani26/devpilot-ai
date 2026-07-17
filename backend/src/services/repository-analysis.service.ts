@@ -10,6 +10,7 @@ export type RepositoryAnalysis = {
   };
   fileCountEstimate: number;
   frameworks: string[];
+  runtimes: ("Node.js" | "Bun" | "Deno")[];
   packageManager: "npm" | "yarn" | "pnpm" | "bun" | "pip" | "unknown";
   dependencies: Record<string, string>;
   scripts: Record<string, string>;
@@ -42,6 +43,7 @@ type PackageJson = {
   peerDependencies?: Record<string, unknown>;
   optionalDependencies?: Record<string, unknown>;
   scripts?: Record<string, unknown>;
+  engines?: Record<string, unknown>;
 };
 
 const languageExtensions: Record<string, string> = {
@@ -87,23 +89,52 @@ const detectPackageManager = (paths: Set<string>): RepositoryAnalysis["packageMa
   return "unknown";
 };
 
-const detectFrameworks = (dependencies: Record<string, string>, paths: Set<string>): string[] => {
+const frameworkPackages: Record<string, string> = {
+  next: "Next.js",
+  react: "React",
+  "react-dom": "React",
+  vite: "Vite",
+  express: "Express",
+  vue: "Vue",
+  "@angular/core": "Angular",
+  svelte: "Svelte",
+  nuxt: "Nuxt",
+  "@nestjs/core": "NestJS",
+  fastify: "Fastify",
+  koa: "Koa",
+  "@hapi/hapi": "Hapi",
+  "@remix-run/react": "Remix",
+  astro: "Astro",
+  "solid-js": "Solid",
+  "@builder.io/qwik": "Qwik",
+};
+
+const detectFrameworks = (dependencies: Record<string, string>): string[] => {
   const packages = new Set(Object.keys(dependencies));
   const frameworks = new Set<string>();
-  const hasPath = (prefix: string) => [...paths].some((path) => path.startsWith(prefix));
 
-  if (packages.has("next") || [...paths].some((path) => /^next\.config\./.test(path))) frameworks.add("Next.js");
-  if (packages.has("react") || packages.has("react-dom")) frameworks.add("React");
-  if (packages.has("vite") || [...paths].some((path) => /^vite\.config\./.test(path))) frameworks.add("Vite");
-  if (packages.has("express")) frameworks.add("Express");
-  if (packages.has("vue") || hasPath("src/") && [...paths].some((path) => path.endsWith(".vue"))) frameworks.add("Vue");
-  if (packages.has("@angular/core") || paths.has("angular.json")) frameworks.add("Angular");
-  if (packages.has("svelte") || paths.has("svelte.config.js")) frameworks.add("Svelte");
-  if (packages.has("django") || paths.has("manage.py")) frameworks.add("Django");
-  if (packages.has("flask")) frameworks.add("Flask");
-  if (Object.keys(dependencies).length > 0 || [...paths].some((path) => /\.(?:cjs|mjs|js|ts)$/.test(path))) frameworks.add("Node.js");
+  for (const [packageName, framework] of Object.entries(frameworkPackages)) {
+    if (packages.has(packageName)) frameworks.add(framework);
+  }
 
   return [...frameworks];
+};
+
+const detectRuntimes = (
+  packageManager: RepositoryAnalysis["packageManager"],
+  packageJson: PackageJson,
+  paths: Set<string>,
+): RepositoryAnalysis["runtimes"] => {
+  const runtimes = new Set<RepositoryAnalysis["runtimes"][number]>();
+  const engines = asStringRecord(packageJson.engines);
+
+  if (paths.has("package.json") || packageManager === "npm" || packageManager === "yarn" || packageManager === "pnpm" || engines.node) {
+    runtimes.add("Node.js");
+  }
+  if (packageManager === "bun" || engines.bun) runtimes.add("Bun");
+  if (paths.has("deno.json") || paths.has("deno.jsonc") || engines.deno) runtimes.add("Deno");
+
+  return [...runtimes];
 };
 
 const findPrimaryLanguage = (entries: GitTreeEntry[]): string => {
@@ -175,6 +206,7 @@ const createGitHubAnalysis = async (githubUrl: string, branch: string): Promise<
     ...asStringRecord(packageJson.peerDependencies),
     ...asStringRecord(packageJson.optionalDependencies),
   };
+  const packageManager = detectPackageManager(paths);
 
   return {
     repositorySizeEstimate: {
@@ -183,8 +215,9 @@ const createGitHubAnalysis = async (githubUrl: string, branch: string): Promise<
     },
     fileCountEstimate: tree.filter((entry) => entry.type === "blob").length,
     primaryLanguage: findPrimaryLanguage(tree),
-    frameworks: detectFrameworks(dependencies, paths),
-    packageManager: detectPackageManager(paths),
+    frameworks: detectFrameworks(dependencies),
+    runtimes: detectRuntimes(packageManager, packageJson, paths),
+    packageManager,
     dependencies,
     scripts: asStringRecord(packageJson.scripts),
     source: "github-rest-api",
