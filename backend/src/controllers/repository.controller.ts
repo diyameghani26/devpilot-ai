@@ -1,4 +1,5 @@
 import { RequestHandler } from "express";
+import { isValidObjectId } from "mongoose";
 
 import Repository from "../models/repository.model";
 
@@ -16,6 +17,37 @@ export const getRepositories: RequestHandler = async (_request, response, next) 
       success: true,
       count: repositories.length,
       repositories,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getRepositoryById: RequestHandler<{ id: string }> = async (request, response, next) => {
+  const { id } = request.params;
+
+  if (!isValidObjectId(id)) {
+    response.status(400).json({
+      success: false,
+      message: "Invalid repository ID",
+    });
+    return;
+  }
+
+  try {
+    const repository = await Repository.findById(id);
+
+    if (!repository) {
+      response.status(404).json({
+        success: false,
+        message: "Repository not found",
+      });
+      return;
+    }
+
+    response.status(200).json({
+      success: true,
+      repository,
     });
   } catch (error) {
     next(error);
