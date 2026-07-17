@@ -9,6 +9,13 @@ type CreateRepositoryBody = {
   branch?: unknown;
 };
 
+type UpdateRepositoryBody = {
+  name?: unknown;
+  githubUrl?: unknown;
+  branch?: unknown;
+  status?: unknown;
+};
+
 export const getRepositories: RequestHandler = async (_request, response, next) => {
   try {
     const repositories = await Repository.find().sort({ createdAt: -1 });
@@ -36,6 +43,73 @@ export const getRepositoryById: RequestHandler<{ id: string }> = async (request,
 
   try {
     const repository = await Repository.findById(id);
+
+    if (!repository) {
+      response.status(404).json({
+        success: false,
+        message: "Repository not found",
+      });
+      return;
+    }
+
+    response.status(200).json({
+      success: true,
+      repository,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateRepository: RequestHandler<{ id: string }, unknown, UpdateRepositoryBody> = async (
+  request,
+  response,
+  next,
+) => {
+  const { id } = request.params;
+
+  if (!isValidObjectId(id)) {
+    response.status(400).json({
+      success: false,
+      message: "Invalid repository ID",
+    });
+    return;
+  }
+
+  const allowedFields = ["name", "githubUrl", "branch", "status"] as const;
+  const updates: Partial<Record<(typeof allowedFields)[number], string>> = {};
+
+  for (const field of allowedFields) {
+    const value = request.body[field];
+
+    if (value === undefined) {
+      continue;
+    }
+
+    if (typeof value !== "string" || !value.trim()) {
+      response.status(400).json({
+        success: false,
+        message: `${field} must be a non-empty string`,
+      });
+      return;
+    }
+
+    updates[field] = value.trim();
+  }
+
+  if (Object.keys(updates).length === 0) {
+    response.status(400).json({
+      success: false,
+      message: "Provide at least one repository field to update",
+    });
+    return;
+  }
+
+  try {
+    const repository = await Repository.findByIdAndUpdate(id, updates, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!repository) {
       response.status(404).json({
