@@ -10,5 +10,5 @@ export function WorkspaceChrome({ children }: { children: React.ReactNode }) {
 
   if (!isRepositoryTool) return children;
 
-  return <><WorkspaceNavigation /><div className="lg:pl-[4.5rem]">{children}</div></>;
+  return <><WorkspaceNavigation /><div className="lg:pl-[4.5rem] ">{children}</div></>;
 }

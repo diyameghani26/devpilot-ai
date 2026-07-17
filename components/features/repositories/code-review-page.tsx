@@ -101,12 +101,13 @@ function ScoreRing({ value, label, tone = "foreground" }: { value: number; label
   const strokeClass = tone === "warning" ? "text-warning" : tone === "success" ? "text-success" : "text-foreground";
   return (
     <div className="flex items-center gap-4">
-      <svg width="112" height="112" viewBox="0 0 112 112" className="shrink-0 -rotate-90" role="img" aria-label={`${label}: ${value} out of 100`}>
+      <svg   width="96"
+  height="96" viewBox="0 0 112 112" className=" h-24 w-24  sm:h-28 sm:w-28 shrink-0 -rotate-90" role="img" aria-label={`${label}: ${value} out of 100`}>
         <circle cx="56" cy="56" r={radius} fill="none" stroke="currentColor" strokeWidth="9" className="text-muted" />
         <motion.circle cx="56" cy="56" r={radius} fill="none" stroke="currentColor" strokeWidth="9" strokeLinecap="round" className={strokeClass} strokeDasharray={circumference} initial={{ strokeDashoffset: circumference }} animate={{ strokeDashoffset: offset }} transition={{ duration: 0.8, ease: "easeOut" }} />
       </svg>
       <div>
-        <p className="text-3xl font-semibold tracking-[-0.05em]">{value}</p>
+        <p className="text-3xl font-semibold tracking-tight">{value}</p>
         <p className="mt-0.5 text-sm text-muted-foreground">{label}</p>
       </div>
     </div>
@@ -131,9 +132,9 @@ function MetricBar({ label, value, description }: { label: string; value: number
 
 function ReviewSkeleton() {
   return (
-    <div className="mx-auto max-w-7xl animate-pulse space-y-6 px-5 py-9 sm:px-8 lg:py-12">
+    <div className="mx-auto max-w-7xl animate-pulse space-y-5 px-4 py-6 sm:space-y-6 sm:px-6 sm:py-9 lg:px-8 lg:py-12">
       <div className="h-5 w-36 rounded bg-muted" />
-      <div className="h-11 w-80 rounded bg-muted" />
+      <div className="h-11 w-full max-w-80 rounded bg-muted" />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
         <div className="h-56 rounded-xl bg-muted" />
         <div className="h-56 rounded-xl bg-muted" />
@@ -154,7 +155,8 @@ function FindingCard({ finding, index }: { finding: Finding; index: number }) {
   return (
     <motion.article initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.04 }} className="overflow-hidden rounded-xl border border-border bg-surface">
       <div className="flex gap-3 p-4 sm:p-5">
-        <span className={cn("grid size-9 shrink-0 place-items-center rounded-lg border", meta.tone)}><SeverityIcon className="size-4" /></span>
+        <span className={cn("grid size-9 shrink-0 place-items-center rounded-lg border", meta.tone)}>
+            <SeverityIcon className="size-4" /></span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={meta.badge}>{finding.severity}</Badge>
@@ -162,7 +164,7 @@ function FindingCard({ finding, index }: { finding: Finding; index: number }) {
           </div>
           <h3 className="mt-3 text-sm font-medium leading-6">{finding.title}</h3>
           <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] text-muted-foreground">
-            <span className="inline-flex min-w-0 items-center gap-1.5"><FileCode2 className="size-3.5 shrink-0" /><span className="max-w-[220px] truncate sm:max-w-none">{finding.file}</span></span>
+            <span className="inline-flex min-w-0 items-center gap-1.5"><FileCode2 className="size-3.5 shrink-0" /><span className="max-w-auto truncate sm:max-w-none">{finding.file}</span></span>
             <span>Ln {finding.line}</span>
           </div>
           <div className="mt-4 rounded-lg border border-border bg-muted/25 p-3">
@@ -234,13 +236,13 @@ export function CodeReviewPage() {
   return (
     <main className="min-h-screen bg-background">
       <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-5 sm:px-8">
+        <div className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-2 sm:h-16 sm:flex-nowrap sm:px-6 sm:py-0 lg:px-8">
           <Link href="/repositories/analysis" className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="size-4" />Analysis</Link>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={refresh} disabled={isLoading}><RefreshCw className={cn("size-3.5", isLoading && "animate-spin")} />Run review again</Button>
+            <Button variant="ghost" size="sm" onClick={refresh} disabled={isLoading}><RefreshCw className={cn("size-3.5", isLoading && "animate-spin")} /><span className="hidden sm:inline">Run review again</span><span className="sm:hidden">Refresh</span></Button>
             <AnimatePresence initial={false}>
               {hasRefreshed ? (
-                <motion.span initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}><Badge variant="success"><CheckCircle2 className="size-3" />Review complete</Badge></motion.span>
+                <motion.span initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}><Badge variant="success"><CheckCircle2 className="size-3" /><span className="hidden sm:inline">Review complete</span><span className="sm:hidden">Done</span></Badge></motion.span>
               ) : (
                 <Badge variant="success" className="hidden sm:inline-flex"><CheckCircle2 className="size-3" />Review ready</Badge>
               )}
@@ -253,18 +255,18 @@ export function CodeReviewPage() {
         {isLoading ? (
           <motion.div key="skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ReviewSkeleton /></motion.div>
         ) : (
-          <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mx-auto max-w-7xl px-5 py-9 sm:px-8 lg:py-12">
-            <section className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mx-auto w-full max-w-[420px] px-4 py-6 sm:max-w-7xl sm:px-6 sm:py-9 lg:px-8 lg:py-12">
+            <section className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="info"><ScanSearch className="size-3" />AI code review</Badge>
                   <span className="text-xs text-muted-foreground">UI preview · Review completed just now</span>
                 </div>
-                <h1 className="mt-4 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">Cleaner code, shipped with confidence.</h1>
-                <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">DevPilot reviewed <span className="font-mono text-sm text-foreground">devpilot-ai</span> for code smells, best-practice violations, duplicated logic, and complexity hotspots.</p>
+                <h1 className="mt-4 text-2xl font-semibold tracking-[-0.04em] sm:text-3xl lg:text-4xl lg:tracking-[-0.045em]">Cleaner code, shipped with confidence.</h1>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">DevPilot reviewed <span className="font-mono text-sm text-foreground">devpilot-ai</span> for code smells, best-practice violations, duplicated logic, and complexity hotspots.</p>
               </div>
-              <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3">
-                <GitBranch className="size-4 text-muted-foreground" />
+              <div className="flex w-full items-center  gap-3 rounded-xl border border-border bg-surface px-4 py-3 sm:justify-start lg:w-auto">
+                <GitBranch className="size-4 shrink-0 text-muted-foreground" />
                 <div>
                   <p className="font-mono text-xs font-medium">main</p>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">18 modules · 2.8k lines scanned</p>
@@ -272,38 +274,38 @@ export function CodeReviewPage() {
               </div>
             </section>
 
-            <section className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+            <section className="mt-6 grid gap-4 sm:mt-8 sm:gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
               <Card>
-                <CardHeader className="border-b border-border">
+                <CardHeader className="border-b border-border p-4 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle>Code quality score</CardTitle>
                       <CardDescription className="mt-1">Overall maintainability, readability, and reliability blend.</CardDescription>
                     </div>
-                    <Sparkles className="size-5 text-muted-foreground" />
+                    <Sparkles className="size-5 shrink-0 text-muted-foreground" />
                   </div>
                 </CardHeader>
-                <CardContent className="flex flex-col gap-6 p-5 sm:p-6 lg:flex-row lg:items-center">
+                <CardContent className="flex flex-col gap-5 p-4 sm:gap-6 sm:p-6 lg:flex-row lg:items-center">
                   <ScoreRing value={overallScore} label="Quality score" tone="success" />
                   <Separator className="lg:hidden" />
-                  <div className="grid flex-1 gap-5 sm:grid-cols-1">
+                  <div className="grid w-full flex-1 gap-5 sm:grid-cols-1">
                     {qualityMetrics.map((metric) => <MetricBar key={metric.key} label={metric.label} value={metric.value} description={metric.description} />)}
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardHeader>
+                <CardHeader className="p-4 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle>Duplication &amp; complexity</CardTitle>
                       <CardDescription className="mt-1">Repeated logic and structural hotspots.</CardDescription>
                     </div>
-                    <Braces className="size-4 text-muted-foreground" />
+                    <Braces className="size-4 shrink-0 text-muted-foreground" />
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-5">
-                  <div className="grid grid-cols-2 gap-3">
+                <CardContent className="space-y-5 p-4 sm:p-6">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="rounded-lg border border-border bg-surface p-3">
                       <p className="text-xl font-semibold">6.4%</p>
                       <p className="mt-1 text-[11px] text-muted-foreground">Duplicated lines · {duplicatedLines} lines</p>
@@ -331,13 +333,13 @@ export function CodeReviewPage() {
               </Card>
             </section>
 
-            <section className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <Card><CardContent className="p-5"><p className="text-sm text-muted-foreground">Findings</p><p className="mt-5 text-3xl font-semibold tracking-[-0.05em]">{findings.length}</p><p className="mt-1 text-xs text-muted-foreground">Across {new Set(findings.map((f) => f.file)).size} files</p></CardContent></Card>
+            <section className="mt-5 grid gap-3 sm:mt-6 grid-cols-2 sm:grid-cols-2 xl:grid-cols-4">
+              <Card><CardContent className="p-4 sm:p-5"><p className="text-sm text-muted-foreground">Findings</p><p className="mt-5 text-3xl font-semibold tracking-[-0.05em]">{findings.length}</p><p className="mt-1 text-xs text-muted-foreground">Across {new Set(findings.map((f) => f.file)).size} files</p></CardContent></Card>
               {(["Critical", "High", "Medium"] as Severity[]).map((item) => {
                 const count = findings.filter((finding) => finding.severity === item).length;
                 return (
                   <Card key={item}>
-                    <CardContent className="p-5">
+                    <CardContent className="p-4 sm:p-5">
                       <div className="flex items-start justify-between"><p className="text-sm text-muted-foreground">{item}</p><span className={cn("size-2 rounded-full", severityMeta[item].dot)} /></div>
                       <p className="mt-5 text-3xl font-semibold tracking-[-0.05em]">{count}</p>
                       <p className="mt-1 text-xs text-muted-foreground">{item === "Critical" ? "Needs immediate review" : item === "High" ? "Prioritize this sprint" : "Safe to schedule"}</p>
@@ -347,9 +349,9 @@ export function CodeReviewPage() {
               })}
             </section>
 
-            <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <section className="mt-5 grid gap-4 sm:mt-6 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
               <Card>
-                <CardHeader className="border-b border-border">
+                <CardHeader className="border-b border-border p-4 sm:p-6">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                       <CardTitle>Review findings</CardTitle>
@@ -394,28 +396,28 @@ export function CodeReviewPage() {
                       })}
                     </div>
                   ) : (
-                    <div className="flex min-h-80 flex-col items-center justify-center px-5 text-center">
+                    <div className="flex min-h-80 flex-col items-center justify-center px-4 text-center">
                       <span className="grid size-11 place-items-center rounded-xl bg-secondary"><Search className="size-5 text-muted-foreground" /></span>
                       <p className="mt-4 text-sm font-medium">No findings match these filters</p>
                       <p className="mt-1 max-w-xs text-xs leading-5 text-muted-foreground">Try another severity or category, or clear your search to see all findings.</p>
-                      <Button variant="secondary" size="sm" className="mt-5" onClick={clearFilters}><X className="size-3.5" />Clear filters</Button>
+                      <Button variant="secondary" size="sm" className="mt-5 w-full sm:w-auto" onClick={clearFilters}><X className="size-3.5" />Clear filters</Button>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-              <aside className="space-y-6">
+              <aside className="space-y-4 sm:space-y-6">
                 <Card>
-                  <CardHeader className="pb-3">
+                  <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-3">
                     <div className="flex items-center justify-between">
                       <div>
                         <CardTitle>Severity distribution</CardTitle>
                         <CardDescription className="mt-1">{findings.length} findings across four levels.</CardDescription>
                       </div>
-                      <Filter className="size-4 text-muted-foreground" />
+                      <Filter className="size-4 shrink-0 text-muted-foreground" />
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-4 px-4 pb-4 sm:px-6 sm:pb-6">
                     {(["Critical", "High", "Medium", "Low"] as Severity[]).map((item) => {
                       const count = findings.filter((finding) => finding.severity === item).length;
                       const width = (count / findings.length) * 100;
@@ -430,16 +432,16 @@ export function CodeReviewPage() {
                 </Card>
 
                 <Card>
-                  <CardHeader className="pb-3">
+                  <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-3">
                     <div className="flex items-center justify-between">
                       <div>
                         <CardTitle>Duplicated code</CardTitle>
                         <CardDescription className="mt-1">Repeated blocks worth consolidating.</CardDescription>
                       </div>
-                      <Copy className="size-4 text-muted-foreground" />
+                      <Copy className="size-4 shrink-0 text-muted-foreground" />
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-3 px-4 pb-4 sm:px-6 sm:pb-6">
                     {duplicateBlocks.map((block) => (
                       <div key={block.id} className="rounded-lg border border-border bg-surface p-3">
                         <div className="flex items-center justify-between gap-2">
@@ -454,16 +456,16 @@ export function CodeReviewPage() {
                 </Card>
 
                 <Card className="overflow-hidden">
-                  <CardHeader className="border-b border-border">
+                  <CardHeader className="border-b border-border p-4 sm:p-6">
                     <div className="flex items-center gap-2">
-                      <span className="grid size-8 place-items-center rounded-lg bg-secondary"><Bot className="size-4 text-muted-foreground" /></span>
+                      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary"><Bot className="size-4 text-muted-foreground" /></span>
                       <div>
                         <CardTitle className="text-sm">AI triage</CardTitle>
                         <CardDescription className="text-xs">Suggested order of work</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-5">
+                  <CardContent className="p-4 sm:p-5">
                     <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3">
                       <div className="flex gap-2"><Sparkles className="mt-0.5 size-3.5 shrink-0 text-destructive" /><p className="text-xs leading-5 text-muted-foreground">Simplify the nested rendering in the architecture explorer first. It is the single largest contributor to this scan&apos;s complexity score.</p></div>
                     </div>
@@ -479,9 +481,9 @@ export function CodeReviewPage() {
               </aside>
             </section>
 
-            <section className="mt-6 rounded-xl border border-border bg-surface p-4 sm:flex sm:items-center sm:justify-between sm:p-5">
+            <section className="mt-5 rounded-xl border border-border bg-surface p-4 sm:mt-6 sm:flex sm:items-center sm:justify-between sm:p-5">
               <div className="flex items-start gap-3">
-                <span className="grid size-9 place-items-center rounded-lg bg-secondary"><ScanSearch className="size-4" /></span>
+                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-secondary"><ScanSearch className="size-4" /></span>
                 <div>
                   <h2 className="text-sm font-medium">Review information</h2>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">Completed in 1m 42s · 142 files processed · Results shown are preview data only.</p>
