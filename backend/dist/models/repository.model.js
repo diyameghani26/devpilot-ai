@@ -1,0 +1,29 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = require("mongoose");
+const repositorySchema = new mongoose_1.Schema({
+    name: {
+        type: String,
+        required: true,
+    },
+    githubUrl: {
+        type: String,
+        required: true,
+    },
+    branch: {
+        type: String,
+        default: "main",
+    },
+    status: {
+        type: String,
+        default: "pending",
+    },
+    analysis: {
+        type: mongoose_1.Schema.Types.Mixed,
+        required: false,
+    },
+}, {
+    timestamps: true,
+});
+const Repository = mongoose_1.models.Repository || (0, mongoose_1.model)("Repository", repositorySchema);
+exports.default = Repository;
