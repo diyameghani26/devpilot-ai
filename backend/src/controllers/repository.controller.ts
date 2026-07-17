@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import { isValidObjectId } from "mongoose";
 
 import Repository from "../models/repository.model";
+import { getGitHubRepositoryMetadata } from "../services/github-repository-metadata.service";
 import { isValidGitHubRepositoryUrl } from "../utils/github-url";
 
 type CreateRepositoryBody = {
@@ -200,10 +201,11 @@ export const createRepository: RequestHandler<unknown, unknown, CreateRepository
   }
 
   try {
+    const metadata = getGitHubRepositoryMetadata(githubUrl.trim());
     const repository = await Repository.create({
       name: name.trim(),
       githubUrl: githubUrl.trim(),
-      ...(branch ? { branch: branch.trim() } : {}),
+      branch: branch?.trim() || metadata.defaultBranch,
     });
 
     response.status(201).json({

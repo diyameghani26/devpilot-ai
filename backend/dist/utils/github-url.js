@@ -15,7 +15,11 @@ const isValidGitHubRepositoryUrl = (value) => {
             return false;
         }
         const pathSegments = url.pathname.split("/").filter(Boolean);
-        if (pathSegments.length !== 2) {
+        const isRepositoryRootUrl = pathSegments.length === 2;
+        const isBranchUrl = pathSegments.length >= 4 &&
+            pathSegments[2] === "tree" &&
+            pathSegments.slice(3).every(Boolean);
+        if (!isRepositoryRootUrl && !isBranchUrl) {
             return false;
         }
         const [owner, repositoryWithExtension] = pathSegments;

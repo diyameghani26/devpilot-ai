@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createRepository = exports.deleteRepository = exports.updateRepository = exports.getRepositoryById = exports.getRepositories = void 0;
 const mongoose_1 = require("mongoose");
 const repository_model_1 = __importDefault(require("../models/repository.model"));
+const github_repository_metadata_service_1 = require("../services/github-repository-metadata.service");
 const github_url_1 = require("../utils/github-url");
 const getRepositories = async (_request, response, next) => {
     try {
@@ -162,10 +163,11 @@ const createRepository = async (request, response, next) => {
         return;
     }
     try {
+        const metadata = (0, github_repository_metadata_service_1.getGitHubRepositoryMetadata)(githubUrl.trim());
         const repository = await repository_model_1.default.create({
             name: name.trim(),
             githubUrl: githubUrl.trim(),
-            ...(branch ? { branch: branch.trim() } : {}),
+            branch: branch?.trim() || metadata.defaultBranch,
         });
         response.status(201).json({
             success: true,
