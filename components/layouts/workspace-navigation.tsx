@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, Bot, Bug, ChevronLeft, ChevronRight, FolderGit2, Gauge, LayoutDashboard, Menu, Network, Plus, ShieldCheck, X } from "lucide-react";
+import { Activity, Bot, Bug, ChevronLeft, ChevronRight, FileText, FolderGit2, LayoutDashboard, Menu, Network, Plus, ShieldCheck, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
@@ -15,11 +15,11 @@ const navigation = [
   { href: "/repositories/architecture", label: "Architecture explorer", icon: Network },
   { href: "/repositories/bugs", label: "Bug detection", icon: Bug },
   { href: "/repositories/security", label: "Security scanner", icon: ShieldCheck },
-  { href: "/repositories/performance", label: "Performance insights", icon: Gauge },
+  { href: "/repositories/readme", label: "README generator", icon: FileText },
 ] as const;
 
 function Brand({ compact = false }: { compact?: boolean }) {
-  return <Link href="/dashboard" className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span className="grid size-8 place-items-center rounded-[10px] bg-primary text-primary-foreground shadow-sm"><Bot className="size-[18px]" strokeWidth={2.2} /></span>{!compact ? <span className="whitespace-nowrap font-semibold tracking-[-0.03em]">DevPilot AI</span> : null}</Link>;
+  return <Link href="/dashboard" className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span className="grid size-8 place-items-center rounded-[10px] bg-primary text-primary-foreground shadow-sm"><Bot className="size-4.5" strokeWidth={2.2} /></span>{!compact ? <span className="whitespace-nowrap font-semibold tracking-[-0.03em]">DevPilot AI</span> : null}</Link>;
 }
 
 function NavigationLinks({ expanded, onNavigate }: { expanded: boolean; onNavigate?: () => void }) {
