@@ -55,6 +55,9 @@ export type RepositoryAnalysis = {
   analyzedAt: string;
 };
 
+export type RepositoryTreeEntry = { path: string; type: "file" | "directory" };
+export type RepositoryFile = { path: string; content: string; branch: string };
+
 type RepositoryListResponse = {
   success: boolean;
   count: number;
@@ -80,6 +83,9 @@ type AnalyzeRepositoryResponse = RepositoryAnalysisResponse & {
   repository: Repository;
 };
 
+type RepositoryTreeResponse = { success: boolean; branch: string; tree: RepositoryTreeEntry[] };
+type RepositoryFileResponse = { success: boolean; file: RepositoryFile };
+
 export const repositoriesApi = {
   list: async (): Promise<Repository[]> => (await request<RepositoryListResponse>("/api/repositories")).repositories,
   get: async (id: string): Promise<Repository> =>
@@ -88,6 +94,10 @@ export const repositoriesApi = {
     (await request<RepositoryAnalysisResponse>(`/api/repositories/${encodeURIComponent(id)}/analysis`)).analysis,
   analyze: async (id: string): Promise<AnalyzeRepositoryResponse> =>
     request<AnalyzeRepositoryResponse>(`/api/repositories/${encodeURIComponent(id)}/analyze`, { method: "POST" }),
+  getTree: async (id: string): Promise<RepositoryTreeResponse> =>
+    request<RepositoryTreeResponse>(`/api/repositories/${encodeURIComponent(id)}/tree`),
+  getFile: async (id: string, path: string): Promise<RepositoryFile> =>
+    (await request<RepositoryFileResponse>(`/api/repositories/${encodeURIComponent(id)}/file?path=${encodeURIComponent(path)}`)).file,
   create: async (repository: Pick<Repository, "name" | "githubUrl"> & { branch?: string }): Promise<Repository> =>
     (await request<CreateRepositoryResponse>("/api/repositories", {
       method: "POST",

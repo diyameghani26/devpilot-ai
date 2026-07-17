@@ -3,11 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createRepository = exports.deleteRepository = exports.updateRepository = exports.getRepositoryAnalysisById = exports.analyzeRepositoryById = exports.getRepositoryById = exports.getRepositories = void 0;
+exports.createRepository = exports.deleteRepository = exports.updateRepository = exports.getRepositoryFileById = exports.getRepositoryTreeById = exports.getRepositoryAnalysisById = exports.analyzeRepositoryById = exports.getRepositoryById = exports.getRepositories = void 0;
 const mongoose_1 = require("mongoose");
 const repository_model_1 = __importDefault(require("../models/repository.model"));
 const github_repository_metadata_service_1 = require("../services/github-repository-metadata.service");
 const repository_analysis_service_1 = require("../services/repository-analysis.service");
+const repository_file_explorer_service_1 = require("../services/repository-file-explorer.service");
 const github_url_1 = require("../utils/github-url");
 const getRepositories = async (_request, response, next) => {
     try {
@@ -93,6 +94,46 @@ const getRepositoryAnalysisById = async (request, response, next) => {
     }
 };
 exports.getRepositoryAnalysisById = getRepositoryAnalysisById;
+const getRepositoryTreeById = async (request, response, next) => {
+    if (!(0, mongoose_1.isValidObjectId)(request.params.id)) {
+        response.status(400).json({ success: false, message: "Invalid repository ID" });
+        return;
+    }
+    try {
+        const repositoryTree = await (0, repository_file_explorer_service_1.getRepositoryTree)(request.params.id);
+        if (!repositoryTree) {
+            response.status(404).json({ success: false, message: "Repository not found" });
+            return;
+        }
+        response.status(200).json({ success: true, ...repositoryTree });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getRepositoryTreeById = getRepositoryTreeById;
+const getRepositoryFileById = async (request, response, next) => {
+    if (!(0, mongoose_1.isValidObjectId)(request.params.id)) {
+        response.status(400).json({ success: false, message: "Invalid repository ID" });
+        return;
+    }
+    if (typeof request.query.path !== "string") {
+        response.status(400).json({ success: false, message: "A repository file path is required" });
+        return;
+    }
+    try {
+        const file = await (0, repository_file_explorer_service_1.getRepositoryFile)(request.params.id, request.query.path);
+        if (!file) {
+            response.status(404).json({ success: false, message: "Repository not found" });
+            return;
+        }
+        response.status(200).json({ success: true, file });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getRepositoryFileById = getRepositoryFileById;
 const updateRepository = async (request, response, next) => {
     const { id } = request.params;
     if (!(0, mongoose_1.isValidObjectId)(id)) {

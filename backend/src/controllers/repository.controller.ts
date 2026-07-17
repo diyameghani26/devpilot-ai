@@ -4,6 +4,7 @@ import { isValidObjectId } from "mongoose";
 import Repository from "../models/repository.model";
 import { getGitHubRepositoryMetadata } from "../services/github-repository-metadata.service";
 import { analyzeRepository, getRepositoryAnalysis } from "../services/repository-analysis.service";
+import { getRepositoryFile, getRepositoryTree } from "../services/repository-file-explorer.service";
 import { isValidGitHubRepositoryUrl } from "../utils/github-url";
 
 type CreateRepositoryBody = {
@@ -107,6 +108,46 @@ export const getRepositoryAnalysisById: RequestHandler<{ id: string }> = async (
     }
 
     response.status(200).json({ success: true, analysis });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getRepositoryTreeById: RequestHandler<{ id: string }> = async (request, response, next) => {
+  if (!isValidObjectId(request.params.id)) {
+    response.status(400).json({ success: false, message: "Invalid repository ID" });
+    return;
+  }
+
+  try {
+    const repositoryTree = await getRepositoryTree(request.params.id);
+    if (!repositoryTree) {
+      response.status(404).json({ success: false, message: "Repository not found" });
+      return;
+    }
+    response.status(200).json({ success: true, ...repositoryTree });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getRepositoryFileById: RequestHandler<{ id: string }, unknown, unknown, { path?: string }> = async (request, response, next) => {
+  if (!isValidObjectId(request.params.id)) {
+    response.status(400).json({ success: false, message: "Invalid repository ID" });
+    return;
+  }
+  if (typeof request.query.path !== "string") {
+    response.status(400).json({ success: false, message: "A repository file path is required" });
+    return;
+  }
+
+  try {
+    const file = await getRepositoryFile(request.params.id, request.query.path);
+    if (!file) {
+      response.status(404).json({ success: false, message: "Repository not found" });
+      return;
+    }
+    response.status(200).json({ success: true, file });
   } catch (error) {
     next(error);
   }
