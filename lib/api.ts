@@ -1,0 +1,60 @@
+const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000").replace(/\/$/, "");
+
+export class ApiError extends Error {
+  constructor(message: string, public readonly status: number) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+type ApiErrorResponse = {
+  message?: string;
+};
+
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+  const body = (await response.json().catch(() => ({}))) as T & ApiErrorResponse;
+
+  if (!response.ok) {
+    throw new ApiError(body.message ?? "Something went wrong. Please try again.", response.status);
+  }
+
+  return body;
+}
+
+export type Repository = {
+  _id: string;
+  name: string;
+  githubUrl: string;
+  branch: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type RepositoryListResponse = {
+  success: boolean;
+  count: number;
+  repositories: Repository[];
+};
+
+type CreateRepositoryResponse = {
+  success: boolean;
+  data: Repository;
+};
+
+export const repositoriesApi = {
+  list: async (): Promise<Repository[]> => (await request<RepositoryListResponse>("/api/repositories")).repositories,
+  create: async (repository: Pick<Repository, "name" | "githubUrl"> & { branch?: string }): Promise<Repository> =>
+    (await request<CreateRepositoryResponse>("/api/repositories", {
+      method: "POST",
+      body: JSON.stringify(repository),
+    })).data,
+};
