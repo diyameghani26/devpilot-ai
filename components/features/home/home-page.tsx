@@ -323,13 +323,27 @@ export function HomePage() {
         </div>
       </section>
 
+      <section id="contact" className="border-t border-border">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-5 py-12 sm:px-8 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Contact</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">Let&apos;s build with context.</h2>
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground">
+            <a href="mailto:hello@devpilot.ai" className="hover:text-foreground">Email</a>
+            <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-foreground">GitHub</a>
+            <a href="https://x.com" target="_blank" rel="noreferrer" className="hover:text-foreground">X (Twitter)</a>
+          </div>
+        </div>
+      </section>
+
       <footer className="border-t border-border">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-5 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <Logo />
           <p>© 2026 DevPilot AI. Build with context.</p>
           <div className="flex items-center gap-4">
-            <Link href="#security" className="hover:text-foreground">Security</Link>
-            <Link href="mailto:hello@devpilot.ai" className="hover:text-foreground">Contact</Link>
+            <Link href="/repositories/security" className="hover:text-foreground">Security</Link>
+            <Link href="#contact" className="hover:text-foreground">Contact</Link>
           </div>
         </div>
       </footer>
