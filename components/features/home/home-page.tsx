@@ -140,7 +140,7 @@ export function HomePage() {
               See the whole codebase. <span className="text-muted-foreground">Ship the right change.</span>
             </motion.h1>
             <motion.p variants={fadeUp} className="mt-7 max-w-xl text-lg leading-8 text-muted-foreground sm:text-xl">
-              DevPilot turns unfamiliar repositories into clear engineering context—so every developer can reason, review, and move faster.
+              DevPilot turns unfamiliar repositories into clear engineering context so every developer can reason, review, and move faster.
             </motion.p>
             <motion.div variants={fadeUp} className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
