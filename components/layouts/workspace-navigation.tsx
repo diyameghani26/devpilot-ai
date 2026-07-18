@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { Activity, Bot, Bug, ChevronLeft, ChevronRight, FolderGit2, LayoutDashboard, Menu, Network, Plus, ScanSearch, ShieldCheck, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -24,9 +24,11 @@ function Brand({ compact = false }: { compact?: boolean }) {
 
 function NavigationLinks({ expanded, onNavigate }: { expanded: boolean; onNavigate?: () => void }) {
   const pathname = usePathname();
+  const params = useParams<{ repositoryId?: string }>();
   return <nav className="space-y-1" aria-label="Workspace navigation">{navigation.map(({ href, label, icon: Icon }) => {
-    const active = pathname === href;
-    return <Link key={href} href={href} onClick={onNavigate} title={!expanded ? label : undefined} className={cn("flex h-10 items-center gap-3 rounded-lg text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", expanded ? "px-3" : "justify-center px-2", active ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground")}><Icon className="size-4 shrink-0" /><span className={cn("truncate", !expanded && "sr-only")}>{label}</span></Link>;
+    const destination = href === "/repositories/architecture" && params.repositoryId ? `/repositories/${params.repositoryId}/architecture` : href;
+    const active = pathname === destination;
+    return <Link key={href} href={destination} onClick={onNavigate} title={!expanded ? label : undefined} className={cn("flex h-10 items-center gap-3 rounded-lg text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", expanded ? "px-3" : "justify-center px-2", active ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground")}><Icon className="size-4 shrink-0" /><span className={cn("truncate", !expanded && "sr-only")}>{label}</span></Link>;
   })}</nav>;
 }
 
