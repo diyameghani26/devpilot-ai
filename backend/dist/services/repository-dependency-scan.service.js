@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.scanRepositoryDependencies = void 0;
 const repository_model_1 = __importDefault(require("../models/repository.model"));
 const repository_file_explorer_service_1 = require("./repository-file-explorer.service");
+const github_api_error_1 = require("../utils/github-api-error");
 const dependencyGroups = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"];
 const asStringRecord = (value) => Object.fromEntries(Object.entries(value ?? {}).filter((entry) => typeof entry[1] === "string"));
 const lineForDependency = (packageJson, name) => {
@@ -54,7 +55,7 @@ const scanRepositoryDependencies = async (repositoryId) => {
         packageFile = await (0, repository_file_explorer_service_1.getRepositoryFile)(repositoryId, "package.json");
     }
     catch (error) {
-        if (error instanceof Error && error.message.includes("GitHub API request failed (404)")) {
+        if (error instanceof github_api_error_1.GitHubApiError && error.statusCode === 404) {
             return { branch: repository.branch, analyzedAt: new Date(), dependencyCount: 0, findings: [], score: 100 };
         }
         throw error;

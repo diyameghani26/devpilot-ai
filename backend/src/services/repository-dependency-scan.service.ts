@@ -1,5 +1,6 @@
 import Repository from "../models/repository.model";
 import { getRepositoryFile } from "./repository-file-explorer.service";
+import { GitHubApiError } from "../utils/github-api-error";
 
 export type DependencySeverity = "Critical" | "High" | "Medium" | "Low";
 
@@ -87,7 +88,7 @@ export const scanRepositoryDependencies = async (repositoryId: string): Promise<
   try {
     packageFile = await getRepositoryFile(repositoryId, "package.json");
   } catch (error) {
-    if (error instanceof Error && error.message.includes("GitHub API request failed (404)")) {
+    if (error instanceof GitHubApiError && error.statusCode === 404) {
       return { branch: repository.branch, analyzedAt: new Date(), dependencyCount: 0, findings: [], score: 100 };
     }
     throw error;

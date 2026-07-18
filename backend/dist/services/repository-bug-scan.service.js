@@ -7,14 +7,14 @@ exports.scanRepositoryBugs = void 0;
 const repository_model_1 = __importDefault(require("../models/repository.model"));
 const env_1 = require("../config/env");
 const github_repository_metadata_service_1 = require("./github-repository-metadata.service");
+const github_api_error_1 = require("../utils/github-api-error");
 const sourceExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".py"]);
 const maxFiles = 40;
 const ignoredDirectories = new Set(["node_modules", ".next", "dist", "build", "coverage", "vendor"]);
 const githubRequest = async (path) => {
     const response = await fetch(`https://api.github.com${path}`, { headers: { Accept: "application/vnd.github+json", "User-Agent": "DevPilot-AI", "X-GitHub-Api-Version": "2022-11-28", ...(env_1.env.githubToken ? { Authorization: `Bearer ${env_1.env.githubToken}` } : {}) } });
     if (!response.ok) {
-        const message = await response.json().then((body) => body.message).catch(() => undefined);
-        throw new Error(`GitHub API request failed (${response.status}): ${message ?? response.statusText}`);
+        throw (0, github_api_error_1.githubApiError)(response);
     }
     return response.json();
 };

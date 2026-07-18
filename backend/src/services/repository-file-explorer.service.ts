@@ -1,6 +1,7 @@
 import Repository from "../models/repository.model";
 import { env } from "../config/env";
 import { getGitHubRepositoryMetadata } from "./github-repository-metadata.service";
+import { githubApiError } from "../utils/github-api-error";
 
 export type RepositoryTreeEntry = {
   path: string;
@@ -23,8 +24,7 @@ const githubRequest = async <T>(path: string): Promise<T> => {
   });
 
   if (!response.ok) {
-    const message = await response.json().then((body: { message?: string }) => body.message).catch(() => undefined);
-    throw new Error(`GitHub API request failed (${response.status}): ${message ?? response.statusText}`);
+    throw githubApiError(response);
   }
 
   return response.json() as Promise<T>;

@@ -1,6 +1,7 @@
 import Repository from "../models/repository.model";
 import { env } from "../config/env";
 import { getGitHubRepositoryMetadata } from "./github-repository-metadata.service";
+import { githubApiError } from "../utils/github-api-error";
 
 export type BugSeverity = "Critical" | "High" | "Medium" | "Low";
 export type BugFinding = { id: string; severity: BugSeverity; title: string; file: string; line: number; category: string; explanation: string; impact: string; fix: string; before: string; after: string };
@@ -18,8 +19,7 @@ const ignoredDirectories = new Set(["node_modules", ".next", "dist", "build", "c
 const githubRequest = async <T>(path: string): Promise<T> => {
   const response = await fetch(`https://api.github.com${path}`, { headers: { Accept: "application/vnd.github+json", "User-Agent": "DevPilot-AI", "X-GitHub-Api-Version": "2022-11-28", ...(env.githubToken ? { Authorization: `Bearer ${env.githubToken}` } : {}) } });
   if (!response.ok) {
-    const message = await response.json().then((body: { message?: string }) => body.message).catch(() => undefined);
-    throw new Error(`GitHub API request failed (${response.status}): ${message ?? response.statusText}`);
+    throw githubApiError(response);
   }
   return response.json() as Promise<T>;
 };

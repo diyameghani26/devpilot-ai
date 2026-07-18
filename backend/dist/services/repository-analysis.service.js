@@ -7,6 +7,7 @@ exports.getRepositoryAnalysis = exports.analyzeRepository = void 0;
 const repository_model_1 = __importDefault(require("../models/repository.model"));
 const github_repository_metadata_service_1 = require("./github-repository-metadata.service");
 const env_1 = require("../config/env");
+const github_api_error_1 = require("../utils/github-api-error");
 const languageExtensions = {
     ".ts": "TypeScript", ".tsx": "TypeScript", ".js": "JavaScript", ".jsx": "JavaScript",
     ".py": "Python", ".java": "Java", ".go": "Go", ".rs": "Rust", ".rb": "Ruby",
@@ -22,8 +23,7 @@ const githubRequest = async (path) => {
         },
     });
     if (!response.ok) {
-        const message = await response.json().then((body) => body.message).catch(() => undefined);
-        throw new Error(`GitHub API request failed (${response.status}): ${message ?? response.statusText}`);
+        throw (0, github_api_error_1.githubApiError)(response);
     }
     return response.json();
 };
