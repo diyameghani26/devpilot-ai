@@ -181,7 +181,7 @@ const analyzeRepository = async (repositoryId) => {
     await repository_model_1.default.findByIdAndUpdate(repositoryId, { status: "analyzing" });
     try {
         const analysis = await createGitHubAnalysis(repository.githubUrl, repository.branch);
-        const analyzedRepository = await repository_model_1.default.findByIdAndUpdate(repositoryId, { status: "ready", analysis }, { new: true, runValidators: true });
+        const analyzedRepository = await repository_model_1.default.findByIdAndUpdate(repositoryId, { status: "ready", analysis, $push: { analysisHistory: analysis } }, { new: true, runValidators: true });
         return analyzedRepository;
     }
     catch (error) {

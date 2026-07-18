@@ -23,6 +23,18 @@ const repositorySchema = new Schema(
       type: Schema.Types.Mixed,
       required: false,
     },
+    analysisHistory: {
+      type: [Schema.Types.Mixed],
+      default: [],
+    },
+    bugIssueCount: {
+      type: Number,
+      default: 0,
+    },
+    dependencyIssueCount: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

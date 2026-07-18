@@ -11,11 +11,8 @@ import {
   Bot,
   CheckCircle2,
   ChevronDown,
-  CircleAlert,
   Clock3,
-  Code2,
   Command,
-  FileCode2,
   FolderGit2,
   GitPullRequest,
   HelpCircle,
@@ -38,6 +35,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { repositoriesApi, type Repository } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -53,12 +51,8 @@ const secondaryNavigation = [
   { label: "Help & support", icon: HelpCircle, href: "/help" },
 ] as const;
 
-const statistics = [
-  { label: "Repositories", value: "12", caption: "+2 this month", icon: FolderGit2 },
-  { label: "Analyses run", value: "48", caption: "+18% from last month", icon: Activity },
-  { label: "Issues resolved", value: "127", caption: "Across 8 repositories", icon: CheckCircle2 },
-  { label: "Hours saved", value: "36.5", caption: "Estimated this month", icon: Clock3 },
-] as const;
+// Each completed repository analysis is estimated to save 30 minutes of initial codebase review.
+const HOURS_SAVED_PER_COMPLETED_ANALYSIS = 0.5;
 
 const quickActions = [
   { title: "Analyze repository", description: "Understand architecture and dependencies.", icon: Sparkles, href: "/repositories/analysis" },
@@ -66,18 +60,9 @@ const quickActions = [
   { title: "Run security scan", description: "Surface risks before they ship.", icon: ShieldCheck, href: "/repositories/security" },
 ] as const;
 
-const analyses = [
-  { name: "payments-service", type: "Architecture analysis", time: "12 min ago", status: "Complete", icon: Code2 },
-  { name: "web-platform", type: "Pull request review", time: "1 hr ago", status: "Complete", icon: GitPullRequest },
-  { name: "mobile-app", type: "Security scan", time: "Yesterday", status: "Attention", icon: ShieldCheck },
-  { name: "data-pipeline", type: "Documentation", time: "Yesterday", status: "Complete", icon: FileCode2 },
-] as const;
-
-const activity = [
-  { text: "Architecture map completed for", subject: "payments-service", time: "12 min ago", icon: Sparkles },
-  { text: "3 suggestions added to", subject: "PR #482", time: "1 hr ago", icon: GitPullRequest },
-  { text: "Security review flagged a dependency in", subject: "mobile-app", time: "Yesterday", icon: CircleAlert },
-] as const;
+function formatAnalysisDate(date: string) {
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(date));
+}
 
 function Brand() {
   return (
@@ -90,7 +75,7 @@ function Brand() {
   );
 }
 
-function Sidebar({ mobile = false, onClose }: { mobile?: boolean; onClose?: () => void }) {
+function Sidebar({ mobile = false, onClose, completedAnalyses = 0 }: { mobile?: boolean; onClose?: () => void; completedAnalyses?: number }) {
   return (
     <aside className={cn("flex h-full flex-col bg-background", mobile ? "w-[85vw] max-w-[300px] p-4" : "w-64 border-r border-border p-4")}>
       <div className="flex h-10 items-center justify-between">
@@ -132,10 +117,9 @@ function Sidebar({ mobile = false, onClose }: { mobile?: boolean; onClose?: () =
       <div className="mt-auto rounded-xl border border-border bg-surface p-3.5">
         <div className="flex items-center gap-2">
           <span className="grid size-7 place-items-center rounded-lg bg-secondary text-foreground"><Sparkles className="size-3.5" /></span>
-          <p className="text-xs font-medium">Pro workspace</p>
+          <p className="text-xs font-medium">DevPilot workspace</p>
         </div>
-        <p className="mt-2 text-xs leading-5 text-muted-foreground">8 of 20 analyses used this month.</p>
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full w-2/5 rounded-full bg-foreground" /></div>
+        <p className="mt-2 text-xs leading-5 text-muted-foreground">{completedAnalyses} completed {completedAnalyses === 1 ? "analysis" : "analyses"} in this workspace.</p>
       </div>
     </aside>
   );
@@ -148,17 +132,49 @@ function StatusBadge({ status }: { status: "Complete" | "Attention" }) {
 export function DashboardPage() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
+  const [repositories, setRepositories] = React.useState<Repository[]>([]);
+  const [isDashboardLoading, setIsDashboardLoading] = React.useState(true);
+  const [dashboardError, setDashboardError] = React.useState("");
   const router = useRouter();
+
+  React.useEffect(() => {
+    let isCurrent = true;
+
+    void repositoriesApi.list()
+      .then((nextRepositories) => { if (isCurrent) setRepositories(nextRepositories); })
+      .catch((error: unknown) => { if (isCurrent) setDashboardError(error instanceof Error ? error.message : "Unable to load workspace data."); })
+      .finally(() => { if (isCurrent) setIsDashboardLoading(false); });
+
+    return () => { isCurrent = false; };
+  }, []);
+
+  const completedAnalyses = React.useMemo(() => repositories.flatMap((repository) => {
+    const analyses = repository.analysisHistory?.length ? repository.analysisHistory : repository.analysis ? [repository.analysis] : [];
+    return analyses.map((analysis) => ({ repository, analysis }));
+  }).sort((a, b) => new Date(b.analysis.analyzedAt).getTime() - new Date(a.analysis.analyzedAt).getTime()), [repositories]);
+  const dashboardStatistics = React.useMemo(() => {
+    const analysisCount = completedAnalyses.length;
+    const hoursSaved = analysisCount * HOURS_SAVED_PER_COMPLETED_ANALYSIS;
+    const detectedIssues = repositories.reduce((total, repository) => total + (repository.bugIssueCount ?? 0) + (repository.dependencyIssueCount ?? 0), 0);
+    return [
+      { label: "Repositories", value: String(repositories.length), caption: "Uploaded repositories", icon: FolderGit2 },
+      { label: "Analyses run", value: String(analysisCount), caption: "Completed repository analyses", icon: Activity },
+      { label: "Issues resolved", value: String(detectedIssues), caption: "Detected issues; fix tracking is not available", icon: CheckCircle2 },
+      { label: "Hours saved", value: hoursSaved % 1 === 0 ? String(hoursSaved) : hoursSaved.toFixed(1), caption: "0.5 hours per completed analysis", icon: Clock3 },
+    ];
+  }, [completedAnalyses.length, repositories]);
+  const recentAnalyses = React.useMemo(() => completedAnalyses.slice(0, 4).map(({ repository, analysis }) => ({ name: repository.name, type: "Repository analysis", time: formatAnalysisDate(analysis.analyzedAt), status: "Complete" as const, icon: Activity })), [completedAnalyses]);
+  const recentActivity = React.useMemo(() => recentAnalyses.slice(0, 3).map((analysis) => ({ text: "Repository analysis completed for", subject: analysis.name, time: analysis.time, icon: Sparkles })), [recentAnalyses]);
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="fixed inset-y-0 left-0 z-30 hidden lg:block"><Sidebar /></div>
+      <div className="fixed inset-y-0 left-0 z-30 hidden lg:block"><Sidebar completedAnalyses={completedAnalyses.length} /></div>
       <AnimatePresence>
         {isMenuOpen ? (
           <>
             <motion.button type="button" aria-label="Close navigation" className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMenuOpen(false)} />
             <motion.div className="fixed inset-y-0 left-0 z-50 lg:hidden" initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ type: "spring", damping: 28, stiffness: 300 }}>
-              <Sidebar mobile onClose={() => setIsMenuOpen(false)} />
+              <Sidebar mobile completedAnalyses={completedAnalyses.length} onClose={() => setIsMenuOpen(false)} />
             </motion.div>
           </>
         ) : null}
@@ -231,7 +247,7 @@ export function DashboardPage() {
             <Separator orientation="vertical" className="mx-1 hidden h-5 sm:block" />
             <button type="button" className="flex shrink-0 items-center gap-2 rounded-lg p-1 text-left transition-colors hover:bg-muted" aria-label="Open account menu">
               <span className="grid size-7 shrink-0 place-items-center rounded-md bg-secondary text-xs font-semibold">DW</span>
-              <span className="hidden sm:block"><span className="block text-xs font-medium">Demo workspace</span><span className="block text-[11px] text-muted-foreground">Product team</span></span>
+              <span className="hidden sm:block"><span className="block text-xs font-medium">DevPilot workspace</span><span className="block text-[11px] text-muted-foreground">Repository intelligence</span></span>
               <ChevronDown className="hidden size-3.5 text-muted-foreground sm:block" />
             </button>
           </div>
@@ -250,7 +266,7 @@ export function DashboardPage() {
 
           <section className="mt-7" aria-label="Workspace statistics">
             <div className="grid grid-cols-2 gap-3">
-              {statistics.map(({ label, value, caption, icon: Icon }, index) => (
+              {dashboardStatistics.map(({ label, value, caption, icon: Icon }, index) => (
                 <motion.div key={label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04 * index, duration: 0.25 }}>
                   <div className="rounded-2xl border border-border bg-card p-4 shadow-sm transition-transform active:scale-[0.98]">
                     <span className="grid size-9 place-items-center rounded-xl bg-secondary text-muted-foreground"><Icon className="size-4" /></span>
@@ -294,7 +310,7 @@ export function DashboardPage() {
               <button type="button" className="flex h-11 items-center text-sm text-muted-foreground hover:text-foreground">View all</button>
             </div>
             <div className="space-y-2.5">
-              {analyses.map(({ name, type, time, status, icon: Icon }) => (
+              {isDashboardLoading ? <div className="rounded-2xl border border-border bg-card p-4 text-center text-xs text-muted-foreground">Loading recent analyses…</div> : recentAnalyses.length ? recentAnalyses.map(({ name, type, time, status, icon: Icon }) => (
                 <div key={`${name}-${type}`} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 shadow-sm">
                   <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-muted-foreground"><Icon className="size-4" /></span>
                   <div className="min-w-0 flex-1">
@@ -303,7 +319,7 @@ export function DashboardPage() {
                   </div>
                   <StatusBadge status={status} />
                 </div>
-              ))}
+              )) : <div className="rounded-2xl border border-border bg-card p-4 text-center text-xs text-muted-foreground">{dashboardError || "No completed analyses yet."}</div>}
             </div>
           </section>
 
@@ -339,7 +355,7 @@ export function DashboardPage() {
                 <div className="flex items-center justify-between"><CardTitle className="text-[0.9375rem]">Recent activity</CardTitle><MessageSquare className="size-4 text-muted-foreground" /></div>
               </CardHeader>
               <CardContent className="space-y-5 p-4 pt-0">
-                {activity.map(({ text, subject, time, icon: Icon }) => (
+                {recentActivity.length ? recentActivity.map(({ text, subject, time, icon: Icon }) => (
                   <div key={subject} className="flex gap-3">
                     <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary text-muted-foreground"><Icon className="size-3.5" /></span>
                     <div className="min-w-0">
@@ -347,7 +363,7 @@ export function DashboardPage() {
                       <p className="mt-1 text-[11px] text-muted-foreground">{time}</p>
                     </div>
                   </div>
-                ))}
+                )) : <p className="text-xs text-muted-foreground">{isDashboardLoading ? "Loading activity…" : dashboardError || "No recent activity yet."}</p>}
               </CardContent>
             </Card>
           </section>
@@ -369,12 +385,12 @@ export function DashboardPage() {
         {/* ================= DESKTOP / TABLET DASHBOARD (>=640px): unchanged ================= */}
         <div className="hidden px-4 py-7 sm:block sm:px-6 lg:px-8 lg:py-9">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <div><p className="text-sm text-muted-foreground">Engineering workspace</p><h1 className="mt-1 text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">Your work, in context.</h1><p className="mt-2 text-sm text-muted-foreground">Here’s the latest across this demo engineering workspace.</p></div>
+            <div><p className="text-sm text-muted-foreground">Engineering workspace</p><h1 className="mt-1 text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">Your work, in context.</h1><p className="mt-2 text-sm text-muted-foreground">Here’s the latest across your engineering workspace.</p></div>
             <Link href="/repositories/upload" className="inline-flex h-11 items-center justify-center gap-2 rounded-[calc(var(--radius)-0.15rem)] bg-primary px-5 text-[0.9375rem] font-medium text-primary-foreground shadow-[0_1px_2px_rgb(0_0_0_/_0.2)] transition-opacity hover:opacity-90"><Plus className="size-4" />New analysis</Link>
           </motion.div>
 
           <section className="mt-8 grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4" aria-label="Workspace statistics">
-            {statistics.map(({ label, value, caption, icon: Icon }, index) => (
+            {dashboardStatistics.map(({ label, value, caption, icon: Icon }, index) => (
               <motion.div key={label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 * index, duration: 0.3 }}>
                 <Card className="group h-full transition-transform duration-200 hover:-translate-y-0.5 hover:border-foreground/20">
                   <CardContent className="p-4 sm:p-5"><div className="flex items-start justify-between"><p className="text-sm text-muted-foreground">{label}</p><span className="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary text-muted-foreground transition-colors group-hover:text-foreground"><Icon className="size-4" /></span></div><p className="mt-5 text-3xl font-semibold tracking-[-0.05em]">{value}</p><p className="mt-1 text-xs text-muted-foreground">{caption}</p></CardContent>
@@ -388,7 +404,7 @@ export function DashboardPage() {
           </div></section>
 
           <section className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-            <Card><CardHeader className="flex-row items-center justify-between gap-4 pb-4"><div><CardTitle>Recent analyses</CardTitle><CardDescription className="mt-1">Latest work across your repositories.</CardDescription></div><button type="button" className="text-sm font-medium text-muted-foreground hover:text-foreground">View all</button></CardHeader><CardContent className="px-0 pb-0"><div className="overflow-x-auto"><table className="w-full min-w-[600px] text-left"><thead className="border-y border-border bg-muted/30 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground"><tr><th className="px-6 py-3">Repository</th><th className="px-4 py-3">Analysis</th><th className="px-4 py-3">Updated</th><th className="px-6 py-3 text-right">Status</th></tr></thead><tbody>{analyses.map(({ name, type, time, status, icon: Icon }) => <tr key={`${name}-${type}`} className="border-b border-border last:border-0 transition-colors hover:bg-muted/30"><td className="px-6 py-4"><div className="flex items-center gap-3"><span className="grid size-8 place-items-center rounded-lg bg-secondary text-muted-foreground"><Icon className="size-4" /></span><span className="font-mono text-xs font-medium">{name}</span></div></td><td className="px-4 py-4 text-sm text-muted-foreground">{type}</td><td className="px-4 py-4 text-sm text-muted-foreground">{time}</td><td className="px-6 py-4 text-right"><StatusBadge status={status} /></td></tr>)}</tbody></table></div></CardContent></Card>
+            <Card><CardHeader className="flex-row items-center justify-between gap-4 pb-4"><div><CardTitle>Recent analyses</CardTitle><CardDescription className="mt-1">Latest work across your repositories.</CardDescription></div><button type="button" className="text-sm font-medium text-muted-foreground hover:text-foreground">View all</button></CardHeader><CardContent className="px-0 pb-0"><div className="overflow-x-auto"><table className="w-full min-w-[600px] text-left"><thead className="border-y border-border bg-muted/30 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground"><tr><th className="px-6 py-3">Repository</th><th className="px-4 py-3">Analysis</th><th className="px-4 py-3">Updated</th><th className="px-6 py-3 text-right">Status</th></tr></thead><tbody>{isDashboardLoading ? <tr><td colSpan={4} className="px-6 py-8 text-center text-sm text-muted-foreground">Loading recent analyses…</td></tr> : recentAnalyses.length ? recentAnalyses.map(({ name, type, time, status, icon: Icon }) => <tr key={`${name}-${type}`} className="border-b border-border last:border-0 transition-colors hover:bg-muted/30"><td className="px-6 py-4"><div className="flex items-center gap-3"><span className="grid size-8 place-items-center rounded-lg bg-secondary text-muted-foreground"><Icon className="size-4" /></span><span className="font-mono text-xs font-medium">{name}</span></div></td><td className="px-4 py-4 text-sm text-muted-foreground">{type}</td><td className="px-4 py-4 text-sm text-muted-foreground">{time}</td><td className="px-6 py-4 text-right"><StatusBadge status={status} /></td></tr>) : <tr><td colSpan={4} className="px-6 py-8 text-center text-sm text-muted-foreground">{dashboardError || "No completed analyses yet."}</td></tr>}</tbody></table></div></CardContent></Card>
           
 
 
@@ -411,7 +427,7 @@ export function DashboardPage() {
            <button type="button" className="absolute right-1 top-1 grid size-8 place-items-center rounded-md bg-primary text-primary-foreground" aria-label="Send message" onClick={(event) => { event.stopPropagation(); router.push("/chat"); }}><Send className="size-3.5" /></button>
                       
                       </div></CardContent></Card>
-              <Card><CardHeader className="pb-3"><div className="flex items-center justify-between"><CardTitle>Recent activity</CardTitle><MessageSquare className="size-4 text-muted-foreground" /></div></CardHeader><CardContent className="space-y-5">{activity.map(({ text, subject, time, icon: Icon }) => <div key={subject} className="flex gap-3"><span className="grid size-7 shrink-0 place-items-center rounded-lg bg-secondary text-muted-foreground"><Icon className="size-3.5" /></span><div className="min-w-0"><p className="text-xs leading-5 text-muted-foreground">{text} <span className="font-medium text-foreground">{subject}</span></p><p className="mt-1 text-[11px] text-muted-foreground">{time}</p></div></div>)}</CardContent></Card></div>
+              <Card><CardHeader className="pb-3"><div className="flex items-center justify-between"><CardTitle>Recent activity</CardTitle><MessageSquare className="size-4 text-muted-foreground" /></div></CardHeader><CardContent className="space-y-5">{recentActivity.length ? recentActivity.map(({ text, subject, time, icon: Icon }) => <div key={subject} className="flex gap-3"><span className="grid size-7 shrink-0 place-items-center rounded-lg bg-secondary text-muted-foreground"><Icon className="size-3.5" /></span><div className="min-w-0"><p className="text-xs leading-5 text-muted-foreground">{text} <span className="font-medium text-foreground">{subject}</span></p><p className="mt-1 text-[11px] text-muted-foreground">{time}</p></div></div>) : <p className="text-xs text-muted-foreground">{isDashboardLoading ? "Loading activity…" : dashboardError || "No recent activity yet."}</p>}</CardContent></Card></div>
           </section>
 
           <section className="mt-8"><Card className="relative overflow-hidden border-dashed bg-surface"><div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,var(--accent),transparent_28%)] opacity-30" /><CardContent className="relative flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-4"><span className="grid size-11 place-items-center rounded-xl border border-border bg-card shadow-sm"><Upload className="size-5" /></span><div><h2 className="font-semibold tracking-[-0.02em]">Upload a repository</h2><p className="mt-1 text-sm text-muted-foreground">Start a new analysis from a Git URL or upload an archive.</p></div></div><Link href="/repositories/upload" className="inline-flex h-10 items-center justify-center gap-2 rounded-[calc(var(--radius)-0.15rem)] border border-border bg-secondary px-4 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-accent"><Upload className="size-4" />Add repository</Link></CardContent></Card></section>

@@ -37,6 +37,10 @@ export type Repository = {
   status: string;
   createdAt: string;
   updatedAt: string;
+  analysis?: RepositoryAnalysis;
+  analysisHistory?: RepositoryAnalysis[];
+  bugIssueCount?: number;
+  dependencyIssueCount?: number;
 };
 
 export type RepositoryAnalysis = {

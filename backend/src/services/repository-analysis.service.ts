@@ -238,7 +238,7 @@ export const analyzeRepository = async (repositoryId: string) => {
     const analysis = await createGitHubAnalysis(repository.githubUrl, repository.branch);
     const analyzedRepository = await Repository.findByIdAndUpdate(
       repositoryId,
-      { status: "ready", analysis },
+      { status: "ready", analysis, $push: { analysisHistory: analysis } },
       { new: true, runValidators: true },
     );
 

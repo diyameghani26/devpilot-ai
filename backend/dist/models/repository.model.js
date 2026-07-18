@@ -23,6 +23,18 @@ const repositorySchema = new mongoose_1.Schema({
         type: mongoose_1.Schema.Types.Mixed,
         required: false,
     },
+    analysisHistory: {
+        type: [mongoose_1.Schema.Types.Mixed],
+        default: [],
+    },
+    bugIssueCount: {
+        type: Number,
+        default: 0,
+    },
+    dependencyIssueCount: {
+        type: Number,
+        default: 0,
+    },
 }, {
     timestamps: true,
 });

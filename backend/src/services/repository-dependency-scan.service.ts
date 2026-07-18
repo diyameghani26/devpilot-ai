@@ -89,6 +89,8 @@ export const scanRepositoryDependencies = async (repositoryId: string): Promise<
     packageFile = await getRepositoryFile(repositoryId, "package.json");
   } catch (error) {
     if (error instanceof GitHubApiError && error.statusCode === 404) {
+      repository.dependencyIssueCount = 0;
+      await repository.save();
       return { branch: repository.branch, analyzedAt: new Date(), dependencyCount: 0, findings: [], score: 100 };
     }
     throw error;
@@ -107,6 +109,9 @@ export const scanRepositoryDependencies = async (repositoryId: string): Promise<
     .map(([name, version]) => dependencyFinding(name, version, lineForDependency(packageFile.content, name)))
     .filter((finding): finding is DependencyFinding => finding !== null);
   const penalty = findings.reduce((total, finding) => total + (finding.severity === "Critical" ? 35 : finding.severity === "High" ? 20 : finding.severity === "Medium" ? 10 : 4), 0);
+
+  repository.dependencyIssueCount = findings.length;
+  await repository.save();
 
   return {
     branch: packageFile.branch,

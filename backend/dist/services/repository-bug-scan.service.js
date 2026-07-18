@@ -75,6 +75,9 @@ const scanRepositoryBugs = async (repositoryId) => {
         return result.type === "file" && result.encoding === "base64" && result.content ? { path, content: Buffer.from(result.content, "base64").toString("utf8") } : null;
     }));
     const readableFiles = files.filter((file) => file !== null);
-    return { branch, analyzedAt: new Date(), sourceFileCount: readableFiles.length, lineCount: readableFiles.reduce((total, file) => total + file.content.split("\n").length, 0), findings: readableFiles.flatMap((file) => findIssues(file.path, file.content)).slice(0, 50) };
+    const findings = readableFiles.flatMap((file) => findIssues(file.path, file.content)).slice(0, 50);
+    repository.bugIssueCount = findings.length;
+    await repository.save();
+    return { branch, analyzedAt: new Date(), sourceFileCount: readableFiles.length, lineCount: readableFiles.reduce((total, file) => total + file.content.split("\n").length, 0), findings };
 };
 exports.scanRepositoryBugs = scanRepositoryBugs;
