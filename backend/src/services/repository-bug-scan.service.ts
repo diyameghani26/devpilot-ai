@@ -35,7 +35,7 @@ const findIssues = (path: string, content: string): BugFinding[] => {
   for (const match of content.matchAll(jsonPattern)) {
     const index = match.index ?? 0;
     const preceding = content.slice(Math.max(0, index - 500), index);
-    if (/\btry\s*\{[^}]*$/s.test(preceding)) continue;
+    if (/\btry\s*\{[\s\S]*$/.test(preceding)) continue;
     const line = lineAt(content, index);
     findings.push({ id: `${path}:json:${line}`, severity: "Medium", title: "JSON parsing can throw outside an error boundary", file: path, line, category: "Error handling", explanation: "This JSON.parse call is not within a nearby try/catch block, so malformed input can terminate the current request or interaction.", impact: "Unexpected or corrupted data can cause a user-visible failure instead of a recoverable error.", fix: "Catch parsing failures and return a controlled fallback or error state.", before: snippetAt(content, line), after: "try {\n  const value = JSON.parse(input);\n} catch {\n  // handle invalid JSON\n}" });
   }
