@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { CheckCircle2, ChevronLeft, Github, Info, Monitor, Moon, Settings, Sun, UserRound } from "lucide-react";
+import { CheckCircle2, ChevronLeft, GitBranch, Info, Monitor, Moon, Settings, Sun, UserRound } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,7 +34,7 @@ export function SettingsPage() {
           </Card>
 
           <div className="grid gap-5 md:grid-cols-2">
-            <Card><CardHeader><div className="flex items-start justify-between gap-3"><div><CardTitle>GitHub connection</CardTitle><CardDescription>Repository access used by DevPilot AI.</CardDescription></div><Github className="size-5 text-muted-foreground" /></div></CardHeader><CardContent><div className="flex items-center gap-2"><Badge variant="neutral"><span className="size-1.5 rounded-full bg-current" />Public repository access</Badge></div><p className="mt-4 text-sm leading-6 text-muted-foreground">DevPilot can analyze public GitHub repositories added to your workspace. OAuth account connection is not enabled in this preview.</p><Link href="/repositories/upload" className="mt-4 inline-flex text-sm font-medium text-foreground underline underline-offset-4">Add a repository</Link></CardContent></Card>
+            <Card><CardHeader><div className="flex items-start justify-between gap-3"><div><CardTitle>GitHub connection</CardTitle><CardDescription>Repository access used by DevPilot AI.</CardDescription></div><GitBranch className="size-5 text-muted-foreground" /></div></CardHeader><CardContent><div className="flex items-center gap-2"><Badge variant="neutral"><span className="size-1.5 rounded-full bg-current" />Public repository access</Badge></div><p className="mt-4 text-sm leading-6 text-muted-foreground">DevPilot can analyze public GitHub repositories added to your workspace. OAuth account connection is not enabled in this preview.</p><Link href="/repositories/upload" className="mt-4 inline-flex text-sm font-medium text-foreground underline underline-offset-4">Add a repository</Link></CardContent></Card>
             <Card><CardHeader><div className="flex items-start justify-between gap-3"><div><CardTitle>Account</CardTitle><CardDescription>Your active DevPilot workspace.</CardDescription></div><UserRound className="size-5 text-muted-foreground" /></div></CardHeader><CardContent><dl className="space-y-3 text-sm"><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Workspace</dt><dd className="font-medium">Demo workspace</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Plan</dt><dd className="font-medium">Pro workspace</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Usage</dt><dd className="font-medium">8 of 20 analyses</dd></div></dl></CardContent></Card>
           </div>
 

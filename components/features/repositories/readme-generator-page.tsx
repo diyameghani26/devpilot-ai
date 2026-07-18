@@ -42,6 +42,8 @@ type SectionKey =
   | "contributing"
   | "license";
 
+const COPYRIGHT_YEAR = 2026;
+
 // ─── Static data ──────────────────────────────────────────────────────────────
 
 const TEMPLATES: {
@@ -206,7 +208,7 @@ function buildReadme(sections: Set<SectionKey>): string {
     lines.push(
       "## License",
       "",
-      `MIT © ${new Date().getFullYear()} DevPilot AI`,
+      `MIT © ${COPYRIGHT_YEAR} DevPilot AI`,
       "",
     );
   }
