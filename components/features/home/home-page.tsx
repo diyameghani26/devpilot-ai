@@ -26,18 +26,21 @@ const features = [
   {
     icon: Network,
     title: "Architecture that clicks",
+    href: "/repositories/architecture",
     description:
       "Map services, dependencies, and data flows in minutes—not weeks of tribal knowledge.",
   },
   {
     icon: GitPullRequest,
     title: "Reviews with context",
+    href: "/repositories/code-review",
     description:
       "Spot brittle changes, missing edge cases, and code smells before they reach production.",
   },
   {
     icon: ShieldCheck,
     title: "Security built in",
+    href: "/repositories/security",
     description:
       "Surface vulnerable patterns, leaked secrets, and risky dependencies across every repository.",
   },
@@ -258,14 +261,14 @@ export function HomePage() {
           </p>
         </div>
         <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-3">
-          {features.map(({ icon: Icon, title, description }) => (
+          {features.map(({ icon: Icon, title, description, href }) => (
             <article key={title} className="bg-background p-7 sm:p-8">
               <span className="grid size-10 place-items-center rounded-lg bg-muted">
                 <Icon className="size-5" />
               </span>
               <h3 className="mt-6 text-lg font-semibold tracking-tight">{title}</h3>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
-              <Link href="#get-started" className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium hover:underline">
+              <Link href={href} className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium hover:underline">
                 Learn more <ArrowRight className="size-3.5" />
               </Link>
             </article>
