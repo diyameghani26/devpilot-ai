@@ -5,6 +5,7 @@ import {
   createRepository,
   deleteRepository,
   getRepositoryAnalysisById,
+  scanRepositoryDependenciesById,
   getRepositoryFileById,
   getRepositoryById,
   getRepositoryTreeById,
@@ -17,6 +18,7 @@ const repositoryRouter = Router();
 repositoryRouter.get("/", getRepositories);
 repositoryRouter.post("/:id/analyze", analyzeRepositoryById);
 repositoryRouter.get("/:id/analysis", getRepositoryAnalysisById);
+repositoryRouter.get("/:id/dependency-scan", scanRepositoryDependenciesById);
 repositoryRouter.get("/:id/tree", getRepositoryTreeById);
 repositoryRouter.get("/:id/file", getRepositoryFileById);
 repositoryRouter.get("/:id", getRepositoryById);

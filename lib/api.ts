@@ -57,6 +57,9 @@ export type RepositoryAnalysis = {
 
 export type RepositoryTreeEntry = { path: string; type: "file" | "directory" };
 export type RepositoryFile = { path: string; content: string; branch: string };
+export type DependencySeverity = "Critical" | "High" | "Medium" | "Low";
+export type DependencyFinding = { id: string; severity: DependencySeverity; kind: string; title: string; file: string; line: number; explanation: string; risk: string; fix: string; before: string; after: string };
+export type RepositoryDependencyScan = { branch: string; analyzedAt: string; dependencyCount: number; findings: DependencyFinding[]; score: number };
 
 type RepositoryListResponse = {
   success: boolean;
@@ -85,6 +88,7 @@ type AnalyzeRepositoryResponse = RepositoryAnalysisResponse & {
 
 type RepositoryTreeResponse = { success: boolean; branch: string; tree: RepositoryTreeEntry[] };
 type RepositoryFileResponse = { success: boolean; file: RepositoryFile };
+type RepositoryDependencyScanResponse = { success: boolean; scan: RepositoryDependencyScan };
 
 export const repositoriesApi = {
   list: async (): Promise<Repository[]> => (await request<RepositoryListResponse>("/api/repositories")).repositories,
@@ -98,6 +102,8 @@ export const repositoriesApi = {
     request<RepositoryTreeResponse>(`/api/repositories/${encodeURIComponent(id)}/tree`),
   getFile: async (id: string, path: string): Promise<RepositoryFile> =>
     (await request<RepositoryFileResponse>(`/api/repositories/${encodeURIComponent(id)}/file?path=${encodeURIComponent(path)}`)).file,
+  getDependencyScan: async (id: string): Promise<RepositoryDependencyScan> =>
+    (await request<RepositoryDependencyScanResponse>(`/api/repositories/${encodeURIComponent(id)}/dependency-scan`)).scan,
   create: async (repository: Pick<Repository, "name" | "githubUrl"> & { branch?: string }): Promise<Repository> =>
     (await request<CreateRepositoryResponse>("/api/repositories", {
       method: "POST",
