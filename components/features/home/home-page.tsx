@@ -330,7 +330,7 @@ export function HomePage() {
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">Let&apos;s build with context.</h2>
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground">
-            <a href="mailto:hello@devpilot.ai" className="hover:text-foreground">Email</a>
+            <a href="mailto:diyameghani18@gmail.com" className="hover:text-foreground">diyameghani18@gmail.com</a>
             <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-foreground">GitHub</a>
             <a href="https://x.com" target="_blank" rel="noreferrer" className="hover:text-foreground">X (Twitter)</a>
           </div>
