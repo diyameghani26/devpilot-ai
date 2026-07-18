@@ -49,8 +49,8 @@ const navigation = [
 ] as const;
 
 const secondaryNavigation = [
-  { label: "Settings", icon: Settings },
-  { label: "Help & support", icon: HelpCircle },
+  { label: "Settings", icon: Settings, href: "/settings" },
+  { label: "Help & support", icon: HelpCircle, href: "/help" },
 ] as const;
 
 const statistics = [
@@ -122,11 +122,11 @@ function Sidebar({ mobile = false, onClose }: { mobile?: boolean; onClose?: () =
       </div>
       <Separator className="my-6" />
       <nav className="space-y-1 px-1" aria-label="Account navigation">
-        {secondaryNavigation.map(({ label, icon: Icon }) => (
-          <button key={label} type="button" className="flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" onClick={onClose}>
+        {secondaryNavigation.map(({ label, icon: Icon, href }) => (
+          <Link key={label} href={href} className="flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" onClick={onClose}>
             <Icon className="size-4" />
             {label}
-          </button>
+          </Link>
         ))}
       </nav>
       <div className="mt-auto rounded-xl border border-border bg-surface p-3.5">
