@@ -7,6 +7,7 @@ repositoryRouter.get("/", repository_controller_1.getRepositories);
 repositoryRouter.post("/:id/analyze", repository_controller_1.analyzeRepositoryById);
 repositoryRouter.get("/:id/analysis", repository_controller_1.getRepositoryAnalysisById);
 repositoryRouter.get("/:id/dependency-scan", repository_controller_1.scanRepositoryDependenciesById);
+repositoryRouter.get("/:id/bug-scan", repository_controller_1.scanRepositoryBugsById);
 repositoryRouter.get("/:id/tree", repository_controller_1.getRepositoryTreeById);
 repositoryRouter.get("/:id/file", repository_controller_1.getRepositoryFileById);
 repositoryRouter.get("/:id", repository_controller_1.getRepositoryById);

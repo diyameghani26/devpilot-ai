@@ -3,13 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createRepository = exports.deleteRepository = exports.updateRepository = exports.getRepositoryFileById = exports.getRepositoryTreeById = exports.scanRepositoryDependenciesById = exports.getRepositoryAnalysisById = exports.analyzeRepositoryById = exports.getRepositoryById = exports.getRepositories = void 0;
+exports.createRepository = exports.deleteRepository = exports.updateRepository = exports.getRepositoryFileById = exports.getRepositoryTreeById = exports.scanRepositoryBugsById = exports.scanRepositoryDependenciesById = exports.getRepositoryAnalysisById = exports.analyzeRepositoryById = exports.getRepositoryById = exports.getRepositories = void 0;
 const mongoose_1 = require("mongoose");
 const repository_model_1 = __importDefault(require("../models/repository.model"));
 const github_repository_metadata_service_1 = require("../services/github-repository-metadata.service");
 const repository_analysis_service_1 = require("../services/repository-analysis.service");
 const repository_file_explorer_service_1 = require("../services/repository-file-explorer.service");
 const repository_dependency_scan_service_1 = require("../services/repository-dependency-scan.service");
+const repository_bug_scan_service_1 = require("../services/repository-bug-scan.service");
 const github_url_1 = require("../utils/github-url");
 const getRepositories = async (_request, response, next) => {
     try {
@@ -113,6 +114,24 @@ const scanRepositoryDependenciesById = async (request, response, next) => {
     }
 };
 exports.scanRepositoryDependenciesById = scanRepositoryDependenciesById;
+const scanRepositoryBugsById = async (request, response, next) => {
+    if (!(0, mongoose_1.isValidObjectId)(request.params.id)) {
+        response.status(400).json({ success: false, message: "Invalid repository ID" });
+        return;
+    }
+    try {
+        const scan = await (0, repository_bug_scan_service_1.scanRepositoryBugs)(request.params.id);
+        if (!scan) {
+            response.status(404).json({ success: false, message: "Repository not found" });
+            return;
+        }
+        response.status(200).json({ success: true, scan });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.scanRepositoryBugsById = scanRepositoryBugsById;
 const getRepositoryTreeById = async (request, response, next) => {
     if (!(0, mongoose_1.isValidObjectId)(request.params.id)) {
         response.status(400).json({ success: false, message: "Invalid repository ID" });

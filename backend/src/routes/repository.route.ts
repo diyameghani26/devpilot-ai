@@ -6,6 +6,7 @@ import {
   deleteRepository,
   getRepositoryAnalysisById,
   scanRepositoryDependenciesById,
+  scanRepositoryBugsById,
   getRepositoryFileById,
   getRepositoryById,
   getRepositoryTreeById,
@@ -19,6 +20,7 @@ repositoryRouter.get("/", getRepositories);
 repositoryRouter.post("/:id/analyze", analyzeRepositoryById);
 repositoryRouter.get("/:id/analysis", getRepositoryAnalysisById);
 repositoryRouter.get("/:id/dependency-scan", scanRepositoryDependenciesById);
+repositoryRouter.get("/:id/bug-scan", scanRepositoryBugsById);
 repositoryRouter.get("/:id/tree", getRepositoryTreeById);
 repositoryRouter.get("/:id/file", getRepositoryFileById);
 repositoryRouter.get("/:id", getRepositoryById);

@@ -60,6 +60,9 @@ export type RepositoryFile = { path: string; content: string; branch: string };
 export type DependencySeverity = "Critical" | "High" | "Medium" | "Low";
 export type DependencyFinding = { id: string; severity: DependencySeverity; kind: string; title: string; file: string; line: number; explanation: string; risk: string; fix: string; before: string; after: string };
 export type RepositoryDependencyScan = { branch: string; analyzedAt: string; dependencyCount: number; findings: DependencyFinding[]; score: number };
+export type BugSeverity = "Critical" | "High" | "Medium" | "Low";
+export type BugFinding = { id: string; severity: BugSeverity; title: string; file: string; line: number; category: string; explanation: string; impact: string; fix: string; before: string; after: string };
+export type RepositoryBugScan = { branch: string; analyzedAt: string; sourceFileCount: number; lineCount: number; findings: BugFinding[] };
 
 type RepositoryListResponse = {
   success: boolean;
@@ -89,6 +92,7 @@ type AnalyzeRepositoryResponse = RepositoryAnalysisResponse & {
 type RepositoryTreeResponse = { success: boolean; branch: string; tree: RepositoryTreeEntry[] };
 type RepositoryFileResponse = { success: boolean; file: RepositoryFile };
 type RepositoryDependencyScanResponse = { success: boolean; scan: RepositoryDependencyScan };
+type RepositoryBugScanResponse = { success: boolean; scan: RepositoryBugScan };
 
 export const repositoriesApi = {
   list: async (): Promise<Repository[]> => (await request<RepositoryListResponse>("/api/repositories")).repositories,
@@ -104,6 +108,8 @@ export const repositoriesApi = {
     (await request<RepositoryFileResponse>(`/api/repositories/${encodeURIComponent(id)}/file?path=${encodeURIComponent(path)}`)).file,
   getDependencyScan: async (id: string): Promise<RepositoryDependencyScan> =>
     (await request<RepositoryDependencyScanResponse>(`/api/repositories/${encodeURIComponent(id)}/dependency-scan`)).scan,
+  getBugScan: async (id: string): Promise<RepositoryBugScan> =>
+    (await request<RepositoryBugScanResponse>(`/api/repositories/${encodeURIComponent(id)}/bug-scan`)).scan,
   create: async (repository: Pick<Repository, "name" | "githubUrl"> & { branch?: string }): Promise<Repository> =>
     (await request<CreateRepositoryResponse>("/api/repositories", {
       method: "POST",

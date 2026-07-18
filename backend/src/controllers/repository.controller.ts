@@ -6,6 +6,7 @@ import { getGitHubRepositoryMetadata } from "../services/github-repository-metad
 import { analyzeRepository, getRepositoryAnalysis } from "../services/repository-analysis.service";
 import { getRepositoryFile, getRepositoryTree } from "../services/repository-file-explorer.service";
 import { scanRepositoryDependencies } from "../services/repository-dependency-scan.service";
+import { scanRepositoryBugs } from "../services/repository-bug-scan.service";
 import { isValidGitHubRepositoryUrl } from "../utils/github-url";
 
 type CreateRepositoryBody = {
@@ -122,6 +123,23 @@ export const scanRepositoryDependenciesById: RequestHandler<{ id: string }> = as
 
   try {
     const scan = await scanRepositoryDependencies(request.params.id);
+    if (!scan) {
+      response.status(404).json({ success: false, message: "Repository not found" });
+      return;
+    }
+    response.status(200).json({ success: true, scan });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const scanRepositoryBugsById: RequestHandler<{ id: string }> = async (request, response, next) => {
+  if (!isValidObjectId(request.params.id)) {
+    response.status(400).json({ success: false, message: "Invalid repository ID" });
+    return;
+  }
+  try {
+    const scan = await scanRepositoryBugs(request.params.id);
     if (!scan) {
       response.status(404).json({ success: false, message: "Repository not found" });
       return;
