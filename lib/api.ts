@@ -1,7 +1,7 @@
-const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000").replace(/\/$/, "");
+const apiBaseUrl = "";
 
 export class ApiError extends Error {
-  constructor(message: string, public readonly status: number) {
+  constructor(message: string, public readonly status: number, public readonly type?: string) {
     super(message);
     this.name = "ApiError";
   }
@@ -9,6 +9,8 @@ export class ApiError extends Error {
 
 type ApiErrorResponse = {
   message?: string;
+  error?: string;
+  type?: string;
 };
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -23,7 +25,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const body = (await response.json().catch(() => ({}))) as T & ApiErrorResponse;
 
   if (!response.ok) {
-    throw new ApiError(body.message ?? "Something went wrong. Please try again.", response.status);
+    let errorMessage = (body.error || body.message) ?? "Something went wrong. Please try again.";
+    if (body.type === "github_rate_limit") {
+      errorMessage = "GitHub API rate limit exceeded. Anonymous GitHub requests have limited hourly quotas. Configuring a GITHUB_TOKEN increases the limit. You may also wait until GitHub resets the quota.";
+    }
+    throw new ApiError(errorMessage, response.status, body.type);
   }
 
   return body;
@@ -99,7 +105,15 @@ type RepositoryDependencyScanResponse = { success: boolean; scan: RepositoryDepe
 type RepositoryBugScanResponse = { success: boolean; scan: RepositoryBugScan };
 
 export const repositoriesApi = {
-  list: async (): Promise<Repository[]> => (await request<RepositoryListResponse>("/api/repositories")).repositories,
+  list: async (): Promise<Repository[]> => {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = localStorage.getItem("devpilot-repositories");
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  },
   get: async (id: string): Promise<Repository> =>
     (await request<RepositoryResponse>(`/api/repositories/${encodeURIComponent(id)}`)).repository,
   getAnalysis: async (id: string): Promise<RepositoryAnalysis> =>
@@ -114,9 +128,27 @@ export const repositoriesApi = {
     (await request<RepositoryDependencyScanResponse>(`/api/repositories/${encodeURIComponent(id)}/dependency-scan`)).scan,
   getBugScan: async (id: string): Promise<RepositoryBugScan> =>
     (await request<RepositoryBugScanResponse>(`/api/repositories/${encodeURIComponent(id)}/bug-scan`)).scan,
-  create: async (repository: Pick<Repository, "name" | "githubUrl"> & { branch?: string }): Promise<Repository> =>
-    (await request<CreateRepositoryResponse>("/api/repositories", {
-      method: "POST",
-      body: JSON.stringify(repository),
-    })).data,
+  create: async (repository: Pick<Repository, "name" | "githubUrl"> & { branch?: string }): Promise<Repository> => {
+    const id = btoa(repository.githubUrl).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    const newRepo: Repository = {
+      _id: id,
+      name: repository.name,
+      githubUrl: repository.githubUrl,
+      branch: repository.branch || "main",
+      status: "ready",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("devpilot-repositories");
+        const list = stored ? JSON.parse(stored) : [];
+        const updated = [newRepo, ...list.filter((r: Repository) => 
+          r.githubUrl.toLowerCase().replace(/\/$/, "") !== repository.githubUrl.toLowerCase().replace(/\/$/, "")
+        )].slice(0, 10);
+        localStorage.setItem("devpilot-repositories", JSON.stringify(updated));
+      } catch {}
+    }
+    return newRepo;
+  },
 };

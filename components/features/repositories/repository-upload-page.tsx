@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft, CheckCircle2, ChevronRight, FileArchive, FileCode2, FolderGit2,
   Info, Link2, LoaderCircle, Plus, ShieldCheck, Upload, X,
@@ -26,6 +27,7 @@ function repositoryDate(date: string) {
 }
   
 export function RepositoryUploadPage() {
+  const router = useRouter();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [url, setUrl] = React.useState("");
   const [file, setFile] = React.useState<File | null>(null);
@@ -72,8 +74,12 @@ export function RepositoryUploadPage() {
       const githubUrl = url.trim();
       const name = githubUrl.replace(/^https:\/\/(www\.)?github\.com\//, "").replace(/\/$/, "");
       const repository = await repositoriesApi.create({ name, githubUrl });
-      setRepositories((current) => [repository, ...current]);
+      setRepositories((current) => [
+        repository,
+        ...current.filter((r) => r.githubUrl.toLowerCase().replace(/\/$/, "") !== githubUrl.toLowerCase().replace(/\/$/, ""))
+      ]);
       setState("success");
+      router.push(`/repositories/${repository._id}`);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Unable to add repository.");
       setState("error");
